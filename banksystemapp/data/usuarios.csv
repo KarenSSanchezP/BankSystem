@@ -1,5 +1,5 @@
 id_usuario,nombres,apellidos,dui,pin,username,rol
-1,Juan,Perez,,,JP01,Admin
+1,Juan,Perez,,,JP1,Admin
 2,Maria,Gonzalez,01234567-1,1111,,Cliente
 3,Carlos,Hernandez,02345678-2,2222,,Cliente
 4,Ana,Martinez,03456789-3,3333,,Cliente

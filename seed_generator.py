@@ -1,13 +1,46 @@
 import os, csv
 
+def leer_ids_existentes(ruta, columna_id_index=0):
+    """Lee los IDs existentes de un archivo CSV"""
+    ids_existentes = set()
+    if os.path.exists(ruta):
+        try:
+            with open(ruta, mode='r', newline='', encoding='utf-8') as archivo:
+                lector = csv.reader(archivo)
+                siguiente(lector)  # Saltar encabezados
+                for fila in lector:
+                    if fila:  # Si la fila no está vacía
+                        ids_existentes.add(fila[columna_id_index])
+        except Exception as e:
+            print(f"Error al leer {ruta}: {e}")
+    return ids_existentes
+
+def siguiente(iterador):
+    """Intenta obtener el siguiente elemento de un iterador"""
+    try:
+        return next(iterador)
+    except StopIteration:
+        return None
+
+def filtrar_duplicados(datos, ids_existentes, columna_id_index=0):
+    """Filtra registros duplicados basándose en los IDs existentes"""
+    encabezados = datos[0]
+    registros_filtrados = [encabezados]
+    
+    for registro in datos[1:]:
+        if registro[columna_id_index] not in ids_existentes:
+            registros_filtrados.append(registro)
+    
+    return registros_filtrados
+
 def generar_archivos_seed():
-    # Asegurarnos de que la carpeta data/ exista
-    os.makedirs('data', exist_ok=True)
+    # Asegurarnos de que la carpeta data/ exista en banksystemapp/
+    os.makedirs('banksystemapp/data', exist_ok=True)
 
     # 1. Datos de Usuarios
     usuarios = [
         ['id_usuario', 'nombres', 'apellidos', 'dui', 'pin', 'username', 'rol'],
-        ['1', 'Juan', 'Perez', '', '', 'JP01', 'Admin'],
+        ['1', 'Juan', 'Perez', '', '', 'JP1', 'Admin'],
         ['2', 'Maria', 'Gonzalez', '01234567-1', '1111', '', 'Cliente'],
         ['3', 'Carlos', 'Hernandez', '02345678-2', '2222', '', 'Cliente'],
         ['4', 'Ana', 'Martinez', '03456789-3', '3333', '', 'Cliente'],
@@ -66,20 +99,49 @@ def generar_archivos_seed():
         ['TR11', 'C004', 'C009', '180.00', '2026-02-19 14:00:00']
     ]
 
-    # Escribir a CSV
+    # Definir archivos con índice de columna ID
     archivos = {
-        'banksystemapp/data/usuarios.csv': usuarios,
-        'banksystemapp/data/cuentas.csv': cuentas,
-        'banksystemapp/data/transacciones.csv': transacciones,
-        'banksystemapp/data/transferencias.csv': transferencias
+        'banksystemapp/data/usuarios.csv': (usuarios, 0),
+        'banksystemapp/data/cuentas.csv': (cuentas, 0),
+        'banksystemapp/data/transacciones.csv': (transacciones, 0),
+        'banksystemapp/data/transferencias.csv': (transferencias, 0)
     }
 
-    for ruta, datos in archivos.items():
-        with open(ruta, mode='w', newline='', encoding='utf-8') as archivo:
-            escritor = csv.writer(archivo)
-            escritor.writerows(datos)
-        print(f"Archivo generado: {ruta}")
+    for ruta, (datos, columna_id) in archivos.items():
+        # Leer IDs existentes
+        ids_existentes = leer_ids_existentes(ruta, columna_id)
+        
+        # Filtrar duplicados
+        datos_filtrados = filtrar_duplicados(datos, ids_existentes, columna_id)
+        
+        # Si hay datos nuevos (además de encabezados)
+        if len(datos_filtrados) > 1:
+            # Si el archivo existe, leer datos anteriores
+            datos_anteriores = []
+            if os.path.exists(ruta):
+                with open(ruta, mode='r', newline='', encoding='utf-8') as archivo:
+                    lector = csv.reader(archivo)
+                    datos_anteriores = list(lector)
+            
+            # Combinar datos anteriores + nuevos datos (sin encabezados repetidos)
+            datos_combinados = datos_anteriores if datos_anteriores else [datos_filtrados[0]]
+            datos_combinados.extend(datos_filtrados[1:])
+            
+            # Escribir datos combinados
+            with open(ruta, mode='w', newline='', encoding='utf-8') as archivo:
+                escritor = csv.writer(archivo)
+                escritor.writerows(datos_combinados)
+            print(f"✓ {ruta} - {len(datos_filtrados) - 1} nuevo(s) registro(s) añadido(s)")
+        else:
+            if os.path.exists(ruta):
+                print(f"✓ {ruta} - Sin registros nuevos (no hay duplicados)")
+            else:
+                # Si el archivo no existe y solo hay encabezados, crearlo
+                with open(ruta, mode='w', newline='', encoding='utf-8') as archivo:
+                    escritor = csv.writer(archivo)
+                    escritor.writerows(datos_filtrados)
+                print(f"✓ {ruta} - Archivo creado")
 
 if __name__ == '__main__':
     generar_archivos_seed()
-    print("¡Seed de datos generado exitosamente!")
+    print("\n¡Seed de datos generado exitosamente!")
