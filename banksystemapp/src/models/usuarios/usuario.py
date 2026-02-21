@@ -21,16 +21,23 @@ class Usuario(ABC):
         
         @property
         def nombres(self):
-            return self._nombres
+            if self.nombres == None:
+                print("Lllenar los espacios")
+            else:
+                return self.nombres
       
         @property
         def apellidos(self):
-            return self._apellidos
+            if self.apellidos == None:
+                print("Llenar los espacios")
+            else:
+                return self._apellidos
     
         @property
         def dui(self):
             return self._dui
         
+        @abstractmethod
         def verificarPassword(self,password):
             return self._password == password
 
