@@ -1,0 +1,11 @@
+id_usuario,nombres,apellidos,dui,pin,username,rol
+1,Juan,Perez,,,JP01,Admin
+2,Maria,Gonzalez,01234567-1,1111,,Cliente
+3,Carlos,Hernandez,02345678-2,2222,,Cliente
+4,Ana,Martinez,03456789-3,3333,,Cliente
+5,Jose,Lopez,04567890-4,4444,,Cliente
+6,Luis,Ramirez,05678901-5,5555,,Cliente
+7,Carmen,Diaz,06789012-6,6666,,Cliente
+8,Jorge,Cruz,07890123-7,7777,,Cliente
+9,Rosa,Gomez,08901234-8,8888,,Cliente
+10,Mario,Flores,09012345-9,9999,,Cliente
