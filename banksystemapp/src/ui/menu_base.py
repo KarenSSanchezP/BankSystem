@@ -52,3 +52,4 @@ class MenuBase:
         print(mensaje)
         self.pausa(2)
         self.limpiar_consola()
+        return
