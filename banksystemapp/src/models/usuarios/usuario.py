@@ -21,25 +21,16 @@ class Usuario(ABC):
         
         @property
         def nombres(self):
-            if self.nombres == None:
-                print("Lllenar los espacios")
-            else:
-                return self.nombres
+            return self.nombres
       
         @property
         def apellidos(self):
-            if self.apellidos == None:
-                print("Llenar los espacios")
-            else:
-                return self._apellidos
+            return self._apellidos
     
         @property
         def dui(self):
             return self._dui
         
-        @abstractmethod
-        def verificarPassword(self,password):
-            return self._password == password
 
         @property
         def password(self):
@@ -51,12 +42,9 @@ class Usuario(ABC):
     
         @abstractmethod
         def crearUserName(self):
-            nombre1=self._nombre
-            apellido1=self._apellido
-            nombre=(nombre1+apellido1).split('')
-            nombre1=[0]
-            apellido1=[0]
-            return f"{nombre1}{apellido1}{self.userId}"
+            inicialNombre=self.nombres[0]
+            inicialApellido=self.apellidos[0]
+            return f"{inicialNombre}{inicialApellido}{self.userId}"
     
         @property
         def userName(self):
