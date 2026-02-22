@@ -41,3 +41,50 @@ class RepositorioAdministrador(usuarioRepository):
                         linea['userName']
                     )
         return None
+        
+    def actualizar(self, userName, nuevos_datos: dict):
+        """Actualiza los datos de un administrador por su userName."""
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            filas = list(csv.DictReader(f))
+        
+        with open(self.archivo, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos())
+            writer.writeheader()
+            for fila in filas:
+                if fila['userName'] == userName and fila['rol'] == 'administrador':
+                    fila['nombres'] = nuevos_datos.get('nombres', fila['nombres'])
+                    fila['apellidos'] = nuevos_datos.get('apellidos', fila['apellidos'])
+                    fila['password'] = nuevos_datos.get('password', fila['password'])
+                writer.writerow(fila)
+
+    def eliminar(self, userName):
+        """Elimina un administrador del CSV por su userName."""
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            filas = list(csv.DictReader(f))
+
+        with open(self.archivo, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos())
+            writer.writeheader()
+            for fila in filas:
+                if not (fila['userName'] == userName and fila['rol'] == 'administrador'):
+                    writer.writerow(fila)
+
+    def listarTodos(self):
+        """Retorna todos los administradores registrados."""
+        admins = []
+        if not os.path.exists(self.archivo):
+            return admins
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for linea in reader:
+                if linea['rol'] == 'administrador':
+                    admins.append(Administrador(
+                        int(linea['userId']),
+                        linea['nombres'],
+                        linea['apellidos'],
+                        linea['dui'],
+                        linea['password'],
+                        linea['rol'],
+                        linea['userName']
+                    ))
+        return admins

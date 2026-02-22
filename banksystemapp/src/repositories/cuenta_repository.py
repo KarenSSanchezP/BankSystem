@@ -93,6 +93,48 @@ class CuentaRepository:
         siguiente = max(numeros) + 1 if numeros else 1
         return f"C{siguiente:03d}"
     
+    def actualizar(self, id_cuenta, nuevos_datos: dict):
+        """Actualiza los datos de una cuenta por su ID."""
+        cuentas = self.obtener_todas()
+
+        with open(self.archivo, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos)
+            writer.writeheader()
+            for c in cuentas:
+                if c.id_cuenta == id_cuenta:
+                    writer.writerow({
+                        'id_cuenta': c.id_cuenta,
+                        'dui_propietario': c.dui_propietario,
+                        'tipo': nuevos_datos.get('tipo', c.tipo),
+                        'saldo': nuevos_datos.get('saldo', c.saldo),
+                        'estado': nuevos_datos.get('estado', c.estado)
+                    })
+                else:
+                    writer.writerow({
+                        'id_cuenta': c.id_cuenta,
+                        'dui_propietario': c.dui_propietario,
+                        'tipo': c.tipo,
+                        'saldo': c.saldo,
+                        'estado': c.estado
+                    })
+
+    def eliminar(self, id_cuenta):
+        """Elimina una cuenta del CSV por su ID."""
+        cuentas = self.obtener_todas()
+        restantes = [c for c in cuentas if c.id_cuenta != id_cuenta]
+
+        with open(self.archivo, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos)
+            writer.writeheader()
+            for c in restantes:
+                writer.writerow({
+                    'id_cuenta': c.id_cuenta,
+                    'dui_propietario': c.dui_propietario,
+                    'tipo': c.tipo,
+                    'saldo': c.saldo,
+                    'estado': c.estado
+                })
+        
 # import csv
 # import os
 # from ..models.cuentas.cuenta_Bancaria import CuentaBancaria

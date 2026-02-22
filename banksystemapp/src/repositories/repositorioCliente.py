@@ -67,6 +67,53 @@ class RepositorioCliente(UsuarioRepository):
                     ))
         return clientes
     
+    def eliminar(self, dui):
+        """Elimina un cliente del CSV por su DUI."""
+        clientes = self.listarTodos()
+        nuevos = [c for c in clientes if c.dui != dui]
+        # Reescribe el archivo sin ese cliente
+        with open(self.archivo, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos())
+            writer.writeheader()
+            for c in nuevos:
+                writer.writerow({
+                    'userId': c.userId,
+                    'nombres': c.nombres,
+                    'apellidos': c.apellidos,
+                    'dui': c.dui,
+                    'password': c.password,
+                    'rol': c.rol,
+                    'userName': c.userName
+                })
+
+    def actualizar(self, dui, nuevos_datos: dict):
+        """Actualiza los datos de un cliente por su DUI."""
+        clientes = self.listarTodos()
+        with open(self.archivo, 'w', encoding='utf-8', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=self._campos())
+            writer.writeheader()
+            for c in clientes:
+                if c.dui == dui:
+                    writer.writerow({
+                        'userId': c.userId,
+                        'nombres': nuevos_datos.get('nombres', c.nombres),
+                        'apellidos': nuevos_datos.get('apellidos', c.apellidos),
+                        'dui': c.dui,
+                        'password': nuevos_datos.get('password', c.password),
+                        'rol': c.rol,
+                        'userName': c.userName
+                    })
+                else:
+                    writer.writerow({
+                        'userId': c.userId,
+                        'nombres': c.nombres,
+                        'apellidos': c.apellidos,
+                        'dui': c.dui,
+                        'password': c.password,
+                        'rol': c.rol,
+                        'userName': c.userName
+                    })
+        
 # import csv
 # import os
 # from .repositorioUsuario import usuarioRepository
