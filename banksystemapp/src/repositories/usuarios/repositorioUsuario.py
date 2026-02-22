@@ -1,6 +1,6 @@
-import csv
-import os
+import csv, os
 from abc import ABC, abstractmethod
+from banksystemapp.src.models.usuarios.usuario import Usuario
 
 class UsuarioRepository(ABC):
     """
@@ -39,7 +39,27 @@ class UsuarioRepository(ABC):
             return 1
         return idMax + 1
     
-    
+    def obtener_usuario(self, userId):
+        """
+        Busca un usuario por su ID.
+        """
+        if not os.path.exists(self.archivo):
+            return None
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for linea in reader:
+                if linea['userId'] == userId:
+                    return Usuario(
+                        int(linea['userId']),
+                        linea['nombres'],
+                        linea['apellidos'],
+                        linea['dui'],
+                        linea['password'],
+                        linea['rol'],
+                        linea['userName']
+                    )
+        return None
+
 # import csv
 # import os
 # from abc import ABC, abstractmethod

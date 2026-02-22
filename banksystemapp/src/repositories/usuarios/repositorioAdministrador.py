@@ -1,7 +1,7 @@
 import csv
 import os
 from .repositorioUsuario import usuarioRepository
-from ..models.usuarios.admin import Administrador
+from models.usuarios.admin import Administrador
 
 class RepositorioAdministrador(usuarioRepository):
     def __init__(self):

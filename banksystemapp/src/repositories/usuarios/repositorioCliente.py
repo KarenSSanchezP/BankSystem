@@ -1,7 +1,7 @@
 import csv
 import os
 from .repositorioUsuario import UsuarioRepository
-from ..models.usuarios.cliente import Cliente
+from models.usuarios.cliente import Cliente
 
 class RepositorioCliente(UsuarioRepository):
     """

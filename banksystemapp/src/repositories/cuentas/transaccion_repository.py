@@ -1,6 +1,6 @@
 import csv
 import os
-from ..models.cuentas.transaccion import Transaccion
+from models.cuentas.transaccion import Transaccion
 
 class TransaccionRepository:
     def __init__(self):

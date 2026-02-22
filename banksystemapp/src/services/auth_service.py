@@ -1,10 +1,10 @@
-from ..repositories.repositorioUsuario import usuarioRepository
+from ..repositories.usuarios.repositorioUsuario import UsuarioRepository
 from ..models.usuarios.cliente import Cliente
 from ..models.usuarios.admin import Administrador
 
 class AuthService:
     def __init__(self):
-        self.repo = usuarioRepository()
+        self.repo = UsuarioRepository()
     
     def login_admin(self, username):
         """
