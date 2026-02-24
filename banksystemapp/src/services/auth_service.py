@@ -1,21 +1,25 @@
 from ..repositories.usuarios.repositorioUsuario import UsuarioRepository
-from ..models.usuarios.cliente import Cliente
-from ..models.usuarios.admin import Administrador
+from ..repositories.usuarios.repositorioAdministrador import RepositorioAdministrador
+from ..repositories.usuarios.repositorioCliente import RepositorioCliente
+from banksystemapp.src.models.usuarios.cliente import Cliente
+from banksystemapp.src.models.usuarios.admin import Administrador
 
 class AuthService:
     def __init__(self):
-        self.repo = UsuarioRepository()
+        self.repo_u = UsuarioRepository()
+        self.repo_a = RepositorioAdministrador()
+        self.repo_c = RepositorioCliente()
     
     def login_admin(self, username):
         """
         Verificar credenciales de un administrador
         """
         try:
-            usuario = self.repo.obtener_usuario_por_username(username)
-            if usuario.rol == 'Admin':
-                return usuario
+            admin = self.repo_a.buscarPorUserName(username)
+            if admin and admin.rol == 'Admin':
+                return admin
             else:
-                raise ValueError("Usuario no válido")
+                raise ValueError("Usuario no válido o no es administrador")
         except Exception as e:
             raise ValueError(f"Error al verificar credenciales: {e}")
     
@@ -24,14 +28,11 @@ class AuthService:
         Verificar credenciales de un cliente
         """
         try:
-            usuario = self.repo.obtener_usuario_por_dui(dui)
-            if usuario.rol == 'Cliente':
-                if usuario.validar_pin(pin):
-                    return usuario
-                else:
-                    raise ValueError("PIN no válido")
+            cliente = self.repo_c.buscarPorDui(dui)
+            if cliente and cliente.pin == pin:
+                return cliente
             else:
-                raise ValueError("Usuario no válido")
+                raise ValueError("Usuario no válido o PIN incorrecto")
         except Exception as e:
             raise ValueError(f"Error al verificar credenciales: {e}")
     
@@ -43,7 +44,7 @@ class AuthService:
             nuevo_id = self.repo.obtenerSiguienteId()
             
             nuevo_cliente = Cliente(nuevo_id, nombres, apellidos, dui, pin, 'Cliente')
-            self.repo.guardar_usuario(nuevo_cliente)
+            self.repo_c.guardar(nuevo_cliente)
             
             return nuevo_cliente
         except Exception as e:
@@ -57,7 +58,7 @@ class AuthService:
             nuevo_id = self.repo.obtenerSiguienteId()
             
             nuevo_admin = Administrador(nuevo_id, nombres, apellidos, rol, userName)
-            self.repo.guardar_usuario(nuevo_admin)
+            self.repo_a.guardar(nuevo_admin)
             
             return nuevo_admin
         except Exception as e:
@@ -68,12 +69,12 @@ class AuthService:
         Cambiar el PIN de un cliente
         """
         try:
-            usuario = self.repo.obtener_usuario(dui)
-            if usuario.rol == 'Cliente':
-                if nuevo_pin != usuario.pin and len(nuevo_pin) == 4 and nuevo_pin.isdigit():
-                    usuario.pin = nuevo_pin
-                    self.repo.guardar_usuario(usuario)
-                    return usuario
+            cliente = self.repo_c.buscarPorDui(dui)
+            if cliente.rol == 'Cliente':
+                if nuevo_pin != cliente.pin and len(nuevo_pin) == 4 and nuevo_pin.isdigit():
+                    cliente.pin = nuevo_pin
+                    self.repo_c.guardar(cliente)
+                    return cliente
                 else:
                     raise ValueError("El PIN debe ser un número de 4 dígitos")
         except Exception as e:

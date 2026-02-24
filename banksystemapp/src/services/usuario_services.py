@@ -62,8 +62,8 @@ class UsuarioService:
         return self._repo_admin.listarTodos()
 
 
-    def cambiar_password(self, dui, password_actual, password_nueva, rol='cliente'):
-        if rol == 'cliente':
+    def cambiar_password(self, dui, password_actual, password_nueva, rol='Cliente'):
+        if rol == 'Cliente':
             usuario = self._repo_cliente.buscarPorDui(dui)
         else:
             usuario = self._repo_admin.buscarPorUserName(dui)
@@ -72,7 +72,7 @@ class UsuarioService:
             return False, "Usuario no encontrado."
         if not usuario.verificarPassword(password_actual):
             return False, "Contraseña actual incorrecta."
-        if rol == 'cliente':
+        if rol == 'Cliente':
             self._repo_cliente.actualizar(dui, {'password': password_nueva})
         else:
             self._repo_admin.actualizar(dui, {'password': password_nueva})

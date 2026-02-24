@@ -64,7 +64,7 @@ class MenuPrincipal(MenuBase):
                     self.limpiar_consola()
                     return
                 usuario_logueado = self.auth_service.login_admin(username_input)
-                print(f"\n\t--- Bienvenido {usuario_logueado.username}! ---")
+                print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
                 
                 self.redirigir_por_rol(usuario_logueado)
@@ -80,7 +80,7 @@ class MenuPrincipal(MenuBase):
                 pin_input = input(">>> PIN (4 digitos): ")  
                 
                 usuario_logueado = self.auth_service.login_cliente(dui_input, pin_input)
-                print(f"\n\t--- Bienvenido {usuario_logueado.username}! ---")
+                print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
                 
                 self.redirigir_por_rol(usuario_logueado)

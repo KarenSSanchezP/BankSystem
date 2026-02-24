@@ -18,7 +18,7 @@ class MenuAdmin(MenuBase):
         Bucle principal del menu de administración
         """
         while True:
-            self.mostrar_encabezado(f"Panel de administrador - {self.usuario.username}", 40)
+            self.mostrar_encabezado(f"Panel de administrador - {self.usuario.userName}", 40)
             
             for opcion in self.opciones:
                 print(f"\t{opcion}")

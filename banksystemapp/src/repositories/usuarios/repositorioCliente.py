@@ -1,7 +1,7 @@
-import csv
 import os
+import csv
 from .repositorioUsuario import UsuarioRepository
-from models.usuarios.cliente import Cliente
+from banksystemapp.src.models.usuarios.cliente import Cliente
 
 class RepositorioCliente(UsuarioRepository):
     """
@@ -35,9 +35,9 @@ class RepositorioCliente(UsuarioRepository):
         with open(self.archivo, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for linea in reader:
-                if linea['dui'] == dui and linea['rol'] == 'cliente':
+                if linea['dui'] == dui and linea['rol'] == 'Cliente':
                     return Cliente(
-                        int(linea['userId']),
+                        linea['userId'],
                         linea['nombres'],
                         linea['apellidos'],
                         linea['dui'],
@@ -55,9 +55,9 @@ class RepositorioCliente(UsuarioRepository):
         with open(self.archivo, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for linea in reader:
-                if linea['rol'] == 'cliente':
+                if linea['rol'] == 'Cliente':
                     clientes.append(Cliente(
-                        int(linea['userId']),
+                        linea['userId'],
                         linea['nombres'],
                         linea['apellidos'],
                         linea['dui'],

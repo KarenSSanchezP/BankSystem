@@ -18,7 +18,7 @@ class MenuCliente(MenuBase):
         Bucle principal del menu de cliente
         """
         while True:
-            self.mostrar_encabezado(f"Panel de cliente - {self.usuario.username}", 40)
+            self.mostrar_encabezado(f"Panel de cliente - {self.usuario.userName}", 40)
             
             for opcion in self.opciones:
                 print(f"\t{opcion}")

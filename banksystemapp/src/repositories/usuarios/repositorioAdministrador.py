@@ -1,9 +1,9 @@
 import csv
 import os
-from .repositorioUsuario import usuarioRepository
-from models.usuarios.admin import Administrador
+from .repositorioUsuario import UsuarioRepository
+from banksystemapp.src.models.usuarios.admin import Administrador
 
-class RepositorioAdministrador(usuarioRepository):
+class RepositorioAdministrador(UsuarioRepository):
     def __init__(self):
         super().__init__()
 
@@ -30,9 +30,9 @@ class RepositorioAdministrador(usuarioRepository):
         with open(self.archivo, 'r', encoding='utf-8') as archivo:
             reader = csv.DictReader(archivo)
             for linea in reader:
-                if linea['userName'] == userName and linea['rol'] == 'administrador':
+                if linea['userName'] == userName and linea['rol'] == 'Admin':
                     return Administrador(
-                        int(linea['userId']),
+                        linea['userId'],
                         linea['nombres'],
                         linea['apellidos'],
                         linea['dui'],
@@ -51,7 +51,7 @@ class RepositorioAdministrador(usuarioRepository):
             writer = csv.DictWriter(f, fieldnames=self._campos())
             writer.writeheader()
             for fila in filas:
-                if fila['userName'] == userName and fila['rol'] == 'administrador':
+                if fila['userName'] == userName and fila['rol'] == 'Admin':
                     fila['nombres'] = nuevos_datos.get('nombres', fila['nombres'])
                     fila['apellidos'] = nuevos_datos.get('apellidos', fila['apellidos'])
                     fila['password'] = nuevos_datos.get('password', fila['password'])
@@ -66,7 +66,7 @@ class RepositorioAdministrador(usuarioRepository):
             writer = csv.DictWriter(f, fieldnames=self._campos())
             writer.writeheader()
             for fila in filas:
-                if not (fila['userName'] == userName and fila['rol'] == 'administrador'):
+                if not (fila['userName'] == userName and fila['rol'] == 'Admin'):
                     writer.writerow(fila)
 
     def listarTodos(self):
@@ -77,9 +77,9 @@ class RepositorioAdministrador(usuarioRepository):
         with open(self.archivo, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for linea in reader:
-                if linea['rol'] == 'administrador':
+                if linea['rol'] == 'Admin':
                     admins.append(Administrador(
-                        int(linea['userId']),
+                        linea['userId'],
                         linea['nombres'],
                         linea['apellidos'],
                         linea['dui'],
