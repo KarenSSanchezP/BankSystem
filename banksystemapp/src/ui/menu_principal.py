@@ -1,10 +1,12 @@
 from .menu_base import MenuBase
 from .menu_admin import MenuAdmin
 from .menu_cliente import MenuCliente
+from ..services.auth_services import AuthService
 
 class MenuPrincipal(MenuBase):
     def __init__(self):
         super().__init__()
+        self.auth_service = AuthService()
         self.opciones = [
             '1. Iniciar sesión',
             '2. Salir'
@@ -60,7 +62,7 @@ class MenuPrincipal(MenuBase):
                     self.limpiar_consola()
                     return
                 usuario_logueado = self.auth_service.login_admin(username_input)
-                print(f"\n\t--- Bienvenido {usuario_logueado.username}! ---")
+                print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
                 
                 menu_admin = MenuAdmin(usuario_logueado)
@@ -75,7 +77,7 @@ class MenuPrincipal(MenuBase):
                 pin_input = input("Escriba su PIN: ")
                 
                 usuario_logueado = self.auth_service.login_cliente(dui_input, pin_input)
-                print(f"\n\t--- Bienvenido {usuario_logueado.username}! ---")
+                print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
                 
                 menu_cliente = MenuCliente(usuario_logueado)
