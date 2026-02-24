@@ -11,7 +11,7 @@ class AuthService:
         Verificar credenciales de un administrador
         """
         try:
-            usuario = self.repo.obtener_usuario(username)
+            usuario = self.repo.obtener_usuario_por_username(username)
             if usuario.rol == 'Admin':
                 return usuario
             else:
@@ -24,7 +24,7 @@ class AuthService:
         Verificar credenciales de un cliente
         """
         try:
-            usuario = self.repo.obtener_usuario(dui)
+            usuario = self.repo.obtener_usuario_por_dui(dui)
             if usuario.rol == 'Cliente':
                 if usuario.validar_pin(pin):
                     return usuario

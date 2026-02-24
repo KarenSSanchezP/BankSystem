@@ -39,7 +39,7 @@ class UsuarioRepository(ABC):
             return 1
         return idMax + 1
     
-    def obtener_usuario(self, userId):
+    def obtener_usuario_por_id(self, userId):
         """
         Busca un usuario por su ID.
         """
@@ -59,7 +59,48 @@ class UsuarioRepository(ABC):
                         linea['userName']
                     )
         return None
-
+    
+    def obtener_usuario_por_username(self, username):
+        """
+        Busca un usuario por su nombre de usuario.
+        """
+        if not os.path.exists(self.archivo):
+            return None
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for linea in reader:
+                if linea['userName'] == username:
+                    return Usuario(
+                        linea['userId'],
+                        linea['nombres'],
+                        linea['apellidos'],
+                        linea['dui'],
+                        linea['password'],
+                        linea['rol'],
+                        linea['userName']
+                    )
+        return None
+    
+    def obtener_usuario_por_dui(self, dui):
+        """
+        Busca un usuario por su DUI.
+        """
+        if not os.path.exists(self.archivo):
+            return None
+        with open(self.archivo, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for linea in reader:
+                if linea['dui'] == dui:
+                    return Usuario(
+                        linea['userId'],
+                        linea['nombres'],
+                        linea['apellidos'],
+                        linea['dui'],
+                        linea['password'],
+                        linea['rol'],
+                        linea['userName']
+                    )
+        return None
 # import csv
 # import os
 # from abc import ABC, abstractmethod
