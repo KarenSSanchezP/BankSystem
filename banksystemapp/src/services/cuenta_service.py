@@ -3,6 +3,7 @@ from ..repositories.cuentas.transaccion_repository import TransaccionRepository
 from ..repositories.cuentas.transferencia_repository import TransferenciaRepository
 from ..models.cuentas.transaccion import Transaccion
 from ..models.cuentas.transferencia import Transferencia
+from ..models.cuentas.cuenta_Bancaria import CuentaBancaria
 
 class CuentaService:
     def __init__(self):
@@ -91,3 +92,52 @@ class CuentaService:
             self.transaccion_repo.agregar(nueva_tx)
 
             return True, f"Retiro exitoso. Nuevo saldo: ${cuenta.saldo}"
+    
+    def crear_cuenta(self, dui_propietario, tipo, saldo):
+        """Lógica para crear una nueva cuenta bancaria."""
+        cuentas = self.cuenta_repo.obtener_todas()
+        
+        # Genera un nuevo ID autoincremental (Ej: C001, C002)
+        nuevo_id = f"C{len(cuentas) + 1:03d}" 
+        nueva_cuenta = CuentaBancaria(
+            id_cuenta=nuevo_id,
+            dui_propietario=dui_propietario,
+            tipo=tipo,
+            saldo=saldo
+        )
+        cuentas.append(nueva_cuenta)
+        self.cuenta_repo.guardar_todas(cuentas)
+        
+        return True, f"Cuenta {nuevo_id} creada exitosamente para el cliente con DUI {dui_propietario}."
+    
+    def alternar_estado_cuenta(self, id_cuenta):
+        """
+        Busca una cuenta por su ID y alterna su estado (Activa <-> Bloqueada).
+        """
+        cuentas = self.cuenta_repo.obtener_todas()
+        cuenta = next((c for c in cuentas if c.id_cuenta == id_cuenta), None)
+        if not cuenta:
+            return False, f"Error: No se encontró ninguna cuenta con el ID '{id_cuenta}'."
+        # Alternar el estado usando los métodos del modelo
+        if cuenta.esta_activa():
+            op = input("La cuenta está actualmente Activa. \nPresione 1 para bloquearla o 2 para regresar... ")
+            if op == '1':
+                cuenta.bloquear()
+                accion = "bloqueada"
+            elif op == '2':
+                return True, "\nOperación cancelada."
+            else:
+                return False, "Opción no válida. Intente nuevamente."
+        else:
+            op = input("La cuenta está actualmente Bloqueada. \nPresione 1 para activarla o 2 para regresar... ")
+            if op == '1':
+                cuenta.activar()
+                accion = "activada"
+            elif op == '2':
+                return True, "\nOperación cancelada."
+            else:
+                return False, "Opción no válida. Intente nuevamente."
+        # Guardar los cambios en el repositorio
+        self.cuenta_repo.guardar_todas(cuentas)
+        
+        return True, f"La cuenta {id_cuenta} ha sido {accion} exitosamente."

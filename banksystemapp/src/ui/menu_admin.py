@@ -1,10 +1,12 @@
 from .menu_base import MenuBase
 from ..services.usuario_services import UsuarioService
+from ..services.cuenta_service import CuentaService
 
 class MenuAdmin(MenuBase):
     def __init__(self, usuario_logueado):
         super().__init__()
         self.usuario_service = UsuarioService()
+        self.cuenta_service = CuentaService()
         self.usuario = usuario_logueado
         self.opciones = [
             '1. Crear cliente',
@@ -76,18 +78,60 @@ class MenuAdmin(MenuBase):
         Permite crear una nueva cuenta a un cliente
         """
         self.mostrar_encabezado("Crear cuenta a cliente", 40, simbolo="-", es_salto_de_linea=True)
-        print("En construcción...")
-        self.continuar()
-        self.limpiar_consola()
+        
+        try:
+            dui_propietario = input("Ingrese el DUI del cliente: ")
+            if not dui_propietario:
+                raise ValueError("El DUI es obligatorio.")
+                
+            # Validar que el cliente exista
+            exito, cliente = self.usuario_service.obtener_cliente(dui_propietario)
+            if not exito:
+                raise ValueError("No existe un cliente registrado con ese DUI.")
+
+            tipo = input("Ingrese el tipo de cuenta (Ahorro/Corriente): ").capitalize()
+            if tipo not in ['Ahorro', 'Corriente']:
+                raise ValueError("El tipo de cuenta debe ser 'Ahorro' o 'Corriente'.")
+
+            saldo_str = input("Ingrese el saldo inicial: ")
+            try:
+                saldo = float(saldo_str)
+                if saldo < 0:
+                    raise ValueError("El saldo inicial no puede ser negativo.")
+            except ValueError:
+                raise ValueError("El saldo debe ser un valor numérico válido.")
+            
+            # Llamar al servicio para crear la cuenta
+            exito, msg = self.cuenta_service.crear_cuenta(dui_propietario, tipo, saldo)
+            print(msg)
+            
+            self.continuar()
+            self.limpiar_consola()
+        except ValueError as e:
+            print(f"Error: {e}")
+            self.continuar()
+            self.limpiar_consola()
     
     def bloquear_activar_cuenta(self):
         """
         Permite bloquear o activar una cuenta
         """
         self.mostrar_encabezado("Bloquear / activar cuenta", 40, simbolo="-", es_salto_de_linea=True)
-        print("En construcción...")
-        self.continuar()
-        self.limpiar_consola()
+        
+        try:
+            id_cuenta = input("Ingrese el ID de la cuenta (ej. C001): ").strip()
+            if not id_cuenta:
+                raise ValueError("El ID de la cuenta es obligatorio.")
+            
+            # Llamar al servicio para alternar el estado de la cuenta
+            exito, msg = self.cuenta_service.alternar_estado_cuenta(id_cuenta)
+            print(msg)
+            self.continuar()
+            self.limpiar_consola()
+        except ValueError as e:
+            print(f"Error: {e}")
+            self.continuar()
+            self.limpiar_consola()
     
     def listar_usuarios_cuentas(self):
         """
