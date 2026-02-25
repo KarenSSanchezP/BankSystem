@@ -43,3 +43,22 @@ class RepositorioAdministrador(usuarioRepository):
                     if admin.userName == userName:
                         return admin
         return None
+    
+    def listarTodos(self):
+        admins = []
+        if not os.path.exists(self.archivo):
+            return admins
+        with open(self.archivo, 'r', encoding='utf-8') as archivo:
+            reader = csv.DictReader(archivo)
+            for linea in reader:
+                if linea['rol'].lower() == 'admin':
+                    admins.append(Administrador(
+                        int(linea['id_usuario']),
+                        linea['nombres'],
+                        linea['apellidos'],
+                        linea['dui'],
+                        linea['pin'],
+                        linea['rol'],
+                        linea['username'] if linea['username'] else None
+                    ))
+        return admins

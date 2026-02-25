@@ -93,6 +93,10 @@ class CuentaService:
 
             return True, f"Retiro exitoso. Nuevo saldo: ${cuenta.saldo}"
     
+    def listar_cuentas(self):
+        """Retorna todas las cuentas registradas."""
+        return self.cuenta_repo.obtener_todas()
+    
     def crear_cuenta(self, dui_propietario, tipo, saldo):
         """Lógica para crear una nueva cuenta bancaria."""
         cuentas = self.cuenta_repo.obtener_todas()

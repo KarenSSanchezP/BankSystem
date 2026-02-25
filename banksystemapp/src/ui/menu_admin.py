@@ -1,4 +1,5 @@
 from .menu_base import MenuBase
+from .menu_analitica import MenuAnalitica
 from ..services.usuario_services import UsuarioService
 from ..services.cuenta_service import CuentaService
 
@@ -7,6 +8,7 @@ class MenuAdmin(MenuBase):
         super().__init__()
         self.usuario_service = UsuarioService()
         self.cuenta_service = CuentaService()
+        self.menu_analitica = MenuAnalitica()
         self.usuario = usuario_logueado
         self.opciones = [
             '1. Crear cliente',
@@ -17,12 +19,15 @@ class MenuAdmin(MenuBase):
             '6. Salir'
         ]
     
+    # =================================================================
+    # -------- EJECUCION PRINCIPAL DEL MENÚ DE ADMINISTRADOR ----------
+    # =================================================================
     def ejecutar(self):
         """
         Bucle principal del menu de administración
         """
         while True:
-            self.mostrar_encabezado(f"Panel de administrador - {self.usuario.userName}", 40)
+            self.mostrar_encabezado(f"Panel de administrador - {self.usuario.userName}", 44)
             
             for opcion in self.opciones:
                 print(f"\t{opcion}")
@@ -47,11 +52,14 @@ class MenuAdmin(MenuBase):
                 self.pausa(2)
                 self.limpiar_consola()
     
+    # ===================================================================
+    # - Métodos para las opciones de crear clientes y manejo de cuentas -
+    # ===================================================================
     def crear_cliente(self):
         """
         Permite crear un nuevo cliente
         """
-        self.mostrar_encabezado("Crear cliente", 40, simbolo="-", es_salto_de_linea=True)
+        self.mostrar_encabezado("Crear cliente", 35, simbolo="-", es_salto_de_linea=True)
         
         try:
             lista_datos_cliente = []
@@ -137,16 +145,92 @@ class MenuAdmin(MenuBase):
         """
         Permite listar los usuarios y las cuentas
         """
-        self.mostrar_encabezado("Listar usuarios / cuentas", 40, simbolo="-", es_salto_de_linea=True)
-        print("En construcción...")
-        self.continuar()
-        self.limpiar_consola()
+        while True:
+            self.mostrar_encabezado("Listar usuarios / cuentas", 40, simbolo="-", es_salto_de_linea=True)
+            
+            try:
+                opciones = [
+                    '1. Listar todos los clientes',
+                    '2. Listar todos los administradores',
+                    '3. Listar todas las cuentas',
+                    '4. Regresar'
+                ]
+                for opcion in opciones:
+                    print(f"\t{opcion}")
+                
+                seleccion = self.pedir_opcion(opciones)
+                
+                if seleccion == '1':
+                    self.listar_todos_clientes()
+                elif seleccion == '2':
+                    self.listar_todos_administradores()
+                elif seleccion == '3':
+                    self.listar_todas_cuentas()
+                elif seleccion == '4':
+                    self.limpiar_consola()
+                    break  # Solo regresa al menú principal
+                else:
+                    print("Opción no válida. Intente nuevamente")
+                    self.pausa(2)
+                    self.limpiar_consola()
+            except Exception as e:
+                print(f"Error: {e}")
+                self.continuar()
+                self.limpiar_consola()
     
+    # =================================================================    
+    # -------------- EJECUCIÓN DEL MODULO DE ANALITICA ----------------
+    # =================================================================
     def ejecucion_modulo_analitica(self):
         """
         Permite ejecutar el módulo de análitica
         """
-        self.mostrar_encabezado("Ejecución de modulo de análitica", 40, simbolo="-", es_salto_de_linea=True)
-        print("En construcción...")
+        self.menu_analitica.ejecutar()
+    
+    # =================================================================
+    # ------- Métodos auxiliares para listar usuarios y cuentas -------
+    # =================================================================
+    def listar_todos_clientes(self):
+        self.mostrar_encabezado("Clientes registrados", 40, simbolo="-", es_salto_de_linea=True)
+        clientes = self.usuario_service.listar_clientes()
+        
+        if not clientes:
+            print("No hay clientes registrados.")
+        else:
+            print(f"{'ID':<6} {'Username':<10} {'Nombres':<20} {'Apellidos':<20} {'DUI':<12}")
+            print("-" * 70)
+            for cl in clientes:
+                print(f"{cl.userId:<6} {cl.userName:<10} {cl.nombres:<20} {cl.apellidos:<20} {cl.dui:<12}")
+        
+        self.continuar()
+        self.limpiar_consola()
+
+    def listar_todos_administradores(self):
+        self.mostrar_encabezado("Administradores registrados", 40, simbolo="-", es_salto_de_linea=True)
+        admins = self.usuario_service.listar_admins()
+        
+        if not admins:
+            print("No hay administradores registrados.")
+        else:
+            print(f"{'ID':<6} {'Username':<10} {'Nombres':<20} {'Apellidos':<20} {'DUI':<12}")
+            print("-" * 70)
+            for a in admins:
+                print(f"{a.userId:<6} {a.userName:<10} {a.nombres:<20} {a.apellidos:<20} {a.dui:<12}")
+        
+        self.continuar()
+        self.limpiar_consola()
+
+    def listar_todas_cuentas(self):
+        self.mostrar_encabezado("Cuentas registradas", 40, simbolo="-", es_salto_de_linea=True)
+        cuentas = self.cuenta_service.listar_cuentas()
+        
+        if not cuentas:
+            print("No hay cuentas registradas.")
+        else:
+            print(f"{'ID':<8} {'DUI Propietario':<16} {'Tipo':<12} {'Saldo':>10}  {'Estado':<12}")
+            print("-" * 60)
+            for c in cuentas:
+                print(f"{c.id_cuenta:<8} {c.dui_propietario:<16} {c.tipo:<12} ${c.saldo:>9.2f}  {c.estado:<12}")
+        
         self.continuar()
         self.limpiar_consola()

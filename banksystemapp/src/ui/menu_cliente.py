@@ -108,7 +108,7 @@ class MenuCliente(MenuBase):
 
     def depositar(self):
         """Permite al cliente realizar un depósito en una de sus cuentas."""
-        self.mostrar_encabezado("Depositar", 40, simbolo="-", es_salto_de_linea=True)
+        self.mostrar_encabezado("\tDepositar", 43, simbolo="-", es_salto_de_linea=True)
         cuenta = self._seleccionar_cuenta()
         if cuenta:
             try:
@@ -122,7 +122,7 @@ class MenuCliente(MenuBase):
 
     def retirar(self):
         """Permite al cliente retirar dinero validando saldo y estado[cite: 35, 41]."""
-        self.mostrar_encabezado("Retirar", 40, simbolo="-", es_salto_de_linea=True)
+        self.mostrar_encabezado("\t Retirar", 43, simbolo="-", es_salto_de_linea=True)
         cuenta = self._seleccionar_cuenta()
         if cuenta:
             try:
@@ -136,7 +136,7 @@ class MenuCliente(MenuBase):
 
     def transferir_entre_cuentas(self):
         """Permite transferencias a cuentas propias o terceros[cite: 36, 42]."""
-        self.mostrar_encabezado("Transferir entre cuentas", 40, simbolo="-", es_salto_de_linea=True)
+        self.mostrar_encabezado("Transferir entre cuentas", 41, simbolo="-", es_salto_de_linea=True)
         cuenta_origen = self._seleccionar_cuenta("Seleccione la cuenta de origen: ")
         if cuenta_origen:
             id_destino = input("Ingrese el ID de la cuenta destino (ej. C001): ").strip().upper()
