@@ -1,6 +1,6 @@
 import csv
 import os
-from models.cuentas.cuenta_Bancaria import CuentaBancaria
+from ...models.cuentas.cuenta_Bancaria import CuentaBancaria
 
 class CuentaRepository:
     """

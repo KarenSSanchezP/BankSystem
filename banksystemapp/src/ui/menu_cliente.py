@@ -1,8 +1,8 @@
 from .menu_base import MenuBase
 from ..services.cuenta_service import CuentaService
 from ..repositories.cuenta_repository import CuentaRepository
-from ..repositories.transaccion_repository import TransaccionRepository
-from ..repositories.transferencia_repository import TransferenciaRepository
+from ..repositories.cuentas.transaccion_repository import TransaccionRepository
+from ..repositories.cuentas.transferencia_repository import TransferenciaRepository
 
 class MenuCliente(MenuBase):
     def __init__(self, usuario_logueado):

@@ -67,7 +67,7 @@ class MenuPrincipal(MenuBase):
                 usuario_logueado = self.auth_service.login_admin(username_input)
                 print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
-                
+                self.limpiar_consola()
                 self.redirigir_por_rol(usuario_logueado)
                 
             elif seleccion == '2':
@@ -83,7 +83,7 @@ class MenuPrincipal(MenuBase):
                 usuario_logueado = self.auth_service.login_cliente(dui_input, pin_input)
                 print(f"\n\t--- Bienvenido {usuario_logueado.userName}! ---")
                 self.pausa(2)
-                
+                self.limpiar_consola()
                 self.redirigir_por_rol(usuario_logueado)
             elif seleccion == '3':
                 self.salir("Volviendo al menú principal...")
@@ -91,10 +91,13 @@ class MenuPrincipal(MenuBase):
                 print("Opción no válida. Intente nuevamente")
                 self.pausa(2)
                 self.limpiar_consola()
+                self.iniciar_sesion()
         except Exception as e:
-            print(f"Error al iniciar sesión: {e}")
+            print(f"Error: {e}")
             self.pausa(2)
             self.limpiar_consola()
+            self.iniciar_sesion()
+            
     
     def redirigir_por_rol(self, usuario):
         """

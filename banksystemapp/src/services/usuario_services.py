@@ -1,19 +1,19 @@
-from ..repositories.repositorioCliente import RepositorioCliente
-from ..repositories.repositorioAdministrador import RepositorioAdministrador
+from ..repositories.repositorioCliente import repositorioCliente
+from ..repositories.repositorioadministrador import RepositorioAdministrador
 from ..models.usuarios.cliente import Cliente
 from ..models.usuarios.admin import Administrador
 
 class UsuarioService:
     def __init__(self):
-        self._repo_cliente = RepositorioCliente()
+        self._repo_cliente = repositorioCliente()
         self._repo_admin = RepositorioAdministrador()
 
     def crear_cliente(self, nombres, apellidos, dui, password):
         if self._repo_cliente.buscarPorDui(dui):
             return False, "Ya existe un cliente con ese DUI."
         nuevo_id = self._repo_cliente.obtenerSiguienteId()
-        cliente = Cliente(nuevo_id, nombres, apellidos, dui, password)
-        self._repo_cliente.guardar(cliente)
+        cliente = Cliente(nuevo_id, nombres, apellidos, dui, password, rol='Cliente')
+        self._repo_cliente.guardarCliente(cliente)
         return True, f"Cliente creado. Username: {cliente.userName}"
 
     def obtener_cliente(self, dui):
@@ -48,7 +48,7 @@ class UsuarioService:
 
     def crear_admin(self, nombres, apellidos, dui, password):
         nuevo_id = self._repo_admin.obtenerSiguienteId()
-        admin = Administrador(nuevo_id, nombres, apellidos, dui, password)
+        admin = Administrador(nuevo_id, nombres, apellidos, dui, password, rol='Admin')
         self._repo_admin.guardar(admin)
         return True, f"Admin creado. Username: {admin.userName}"
 

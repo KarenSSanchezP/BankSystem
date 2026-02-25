@@ -1,6 +1,6 @@
 from ..repositories.cuenta_repository import CuentaRepository
-from ..repositories.transaccion_repository import TransaccionRepository
-from ..repositories.transferencia_repository import TransferenciaRepository
+from ..repositories.cuentas.transaccion_repository import TransaccionRepository
+from ..repositories.cuentas.transferencia_repository import TransferenciaRepository
 from ..models.cuentas.transaccion import Transaccion
 from ..models.cuentas.transferencia import Transferencia
 

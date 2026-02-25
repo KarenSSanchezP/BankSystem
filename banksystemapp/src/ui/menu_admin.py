@@ -1,8 +1,10 @@
 from .menu_base import MenuBase
+from ..services.usuario_services import UsuarioService
 
 class MenuAdmin(MenuBase):
     def __init__(self, usuario_logueado):
         super().__init__()
+        self.usuario_service = UsuarioService()
         self.usuario = usuario_logueado
         self.opciones = [
             '1. Crear cliente',
@@ -48,9 +50,26 @@ class MenuAdmin(MenuBase):
         Permite crear un nuevo cliente
         """
         self.mostrar_encabezado("Crear cliente", 40, simbolo="-", es_salto_de_linea=True)
-        print("En construcción...")
-        self.continuar()
-        self.limpiar_consola()
+        
+        try:
+            lista_datos_cliente = []
+            for dato in ['nombres', 'apellidos', 'DUI', 'contraseña (PIN)']:
+                dato = input(f"Ingrese {dato}: ")
+                if not dato:
+                    raise ValueError("Todos los campos son obligatorios.")
+                lista_datos_cliente.append(dato)
+            
+            if len(lista_datos_cliente[3]) != 4:
+                raise ValueError("La contraseña debe tener 4 caracteres.")
+            
+            msg = self.usuario_service.crear_cliente(*lista_datos_cliente)
+            print(msg)
+            self.continuar()
+            self.limpiar_consola()
+        except ValueError as e:
+            print(f"Error: {e}")
+            self.continuar()
+            self.limpiar_consola()
     
     def crear_cuenta_a_cliente(self):
         """

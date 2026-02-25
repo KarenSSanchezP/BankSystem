@@ -1,6 +1,6 @@
 import csv
 import os
-from models.cuentas.transferencia import Transferencia
+from ...models.cuentas.transferencia import Transferencia
 
 class TransferenciaRepository:
     def __init__(self):
