@@ -17,6 +17,11 @@ class CuentaRepository:
                 writer = csv.DictWriter(f, fieldnames=self.headers)
                 writer.writeheader()
 
+    def buscar_por_dui(self, dui):
+        """Retorna una lista de cuentas asociadas a un DUI."""
+        todas_las_cuentas = self.obtener_todas()
+        return [cuenta for cuenta in todas_las_cuentas if cuenta.dui_propietario == dui]
+
     def obtener_todas(self):
         """Carga los datos al iniciar el programa."""
         cuentas = []

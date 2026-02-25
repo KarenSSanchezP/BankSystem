@@ -9,5 +9,5 @@ class Transaccion:
         self.monto = monto
         self.fecha_hora = fecha_hora if fecha_hora else datetime.now()
     
-def __str__(self):
+    def __str__(self):
         return f"[{self.fecha_hora}] {self.tipo}: ${self.monto} (Cuenta: {self.id_cuenta})"

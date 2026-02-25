@@ -7,3 +7,6 @@ class CuentaBancaria:
         self.tipo = tipo
         self.saldo = float(saldo)
         self.estado = estado
+
+    def __str__(self):
+        return f"Cuenta: {self.id_cuenta} | Tipo: {self.tipo} | Saldo: ${self.saldo:.2f} | Estado: {self.estado}"
