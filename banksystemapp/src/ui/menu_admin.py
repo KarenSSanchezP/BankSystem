@@ -15,7 +15,7 @@ class MenuAdmin(MenuBase):
             '2. Crear cuenta a cliente',
             '3. Bloquear / activar cuenta',
             '4. Listar usuarios / cuentas',
-            '5. Ejecucion de modulo de analitica',
+            '5. Analisis de datos',
             '6. Salir'
         ]
     
