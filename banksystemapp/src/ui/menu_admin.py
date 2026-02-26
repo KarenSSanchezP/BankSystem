@@ -1,6 +1,6 @@
 from .menu_base import MenuBase
 from .menu_analitica import MenuAnalitica
-from ..services.usuario_services import UsuarioService
+from ..services.usuario_service import UsuarioService
 from ..services.cuenta_service import CuentaService
 
 class MenuAdmin(MenuBase):
@@ -131,9 +131,27 @@ class MenuAdmin(MenuBase):
             if not id_cuenta:
                 raise ValueError("El ID de la cuenta es obligatorio.")
             
-            # Llamar al servicio para alternar el estado de la cuenta
-            exito, msg = self.cuenta_service.alternar_estado_cuenta(id_cuenta)
-            print(msg)
+            # Obtener el estado actual de la cuenta para mostrar la opción correspondiente
+            cuentas = self.cuenta_service.listar_cuentas()
+            cuenta = next((c for c in cuentas if c.id_cuenta == id_cuenta), None)
+            
+            if not cuenta:
+                raise ValueError(f"No se encontró ninguna cuenta con el ID '{id_cuenta}'.")
+
+            if cuenta.esta_activa():
+                op = input("La cuenta está actualmente Activa. \nPresione 1 para bloquearla o 2 para cancelar... ")
+                accion = 'bloquear' if op == '1' else None
+            else:
+                op = input("La cuenta está actualmente Bloqueada. \nPresione 1 para activarla o 2 para cancelar... ")
+                accion = 'activar' if op == '1' else None
+                
+            if not accion:
+                print("\nOperación cancelada.")
+            else:
+                # Llamar al servicio para alternar el estado de la cuenta
+                exito, msg = self.cuenta_service.alternar_estado_cuenta(id_cuenta, accion)
+                print(msg)
+                
             self.continuar()
             self.limpiar_consola()
         except ValueError as e:

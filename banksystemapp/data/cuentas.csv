@@ -1,6 +1,6 @@
 id_cuenta,dui_propietario,tipo,saldo,estado
 C001,01234567-1,Ahorro,2050.0,Activa
-C002,02345678-2,Corriente,1300.0,Activa
+C002,02345678-2,Corriente,1300.0,Bloqueada
 C003,03456789-3,Ahorro,1400.0,Activa
 C004,04567890-4,Corriente,3100.0,Activa
 C005,05678901-5,Ahorro,300.0,Activa
@@ -12,4 +12,5 @@ C010,77777777-7,Ahorro,1500.0,Activa
 C011,88888888-8,Ahorro,1000.0,Activa
 C012,01122334-5,Corriente,10.0,Activa
 C013,01122334-5,Ahorro,150.0,Activa
-C014,01122334-5,Ahorro,400.0,Activa
+C014,01122334-5,Ahorro,405.0,Activa
+C015,06523234-1,Ahorro,1490.0,Activa

@@ -1,7 +1,7 @@
 from .menu_base import MenuBase
 from .menu_admin import MenuAdmin
 from .menu_cliente import MenuCliente
-from ..services.auth_services import AuthService
+from ..services.auth_service import AuthService
 
 class MenuPrincipal(MenuBase):
     def __init__(self):

@@ -114,34 +114,30 @@ class CuentaService:
         
         return True, f"Cuenta {nuevo_id} creada exitosamente para el cliente con DUI {dui_propietario}."
     
-    def alternar_estado_cuenta(self, id_cuenta):
+    def alternar_estado_cuenta(self, id_cuenta, accion):
         """
-        Busca una cuenta por su ID y alterna su estado (Activa <-> Bloqueada).
+        Busca una cuenta por su ID y cambia su estado (Activa <-> Bloqueada) según la acción solicitada.
         """
         cuentas = self.cuenta_repo.obtener_todas()
         cuenta = next((c for c in cuentas if c.id_cuenta == id_cuenta), None)
+        
         if not cuenta:
             return False, f"Error: No se encontró ninguna cuenta con el ID '{id_cuenta}'."
-        # Alternar el estado usando los métodos del modelo
-        if cuenta.esta_activa():
-            op = input("La cuenta está actualmente Activa. \nPresione 1 para bloquearla o 2 para regresar... ")
-            if op == '1':
-                cuenta.bloquear()
-                accion = "bloqueada"
-            elif op == '2':
-                return True, "\nOperación cancelada."
-            else:
-                return False, "Opción no válida. Intente nuevamente."
+            
+        if accion == 'bloquear':
+            if not cuenta.esta_activa():
+                return False, "La cuenta ya se encuentra bloqueada."
+            cuenta.bloquear()
+            mensaje = "bloqueada"
+        elif accion == 'activar':
+            if cuenta.esta_activa():
+                return False, "La cuenta ya se encuentra activa."
+            cuenta.activar()
+            mensaje = "activada"
         else:
-            op = input("La cuenta está actualmente Bloqueada. \nPresione 1 para activarla o 2 para regresar... ")
-            if op == '1':
-                cuenta.activar()
-                accion = "activada"
-            elif op == '2':
-                return True, "\nOperación cancelada."
-            else:
-                return False, "Opción no válida. Intente nuevamente."
+            return False, "Acción no válida."
+            
         # Guardar los cambios en el repositorio
         self.cuenta_repo.guardar_todas(cuentas)
         
-        return True, f"La cuenta {id_cuenta} ha sido {accion} exitosamente."
+        return True, f"La cuenta {id_cuenta} ha sido {mensaje} exitosamente."

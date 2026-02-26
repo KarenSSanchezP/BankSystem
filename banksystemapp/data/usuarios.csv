@@ -12,3 +12,4 @@ id_usuario,nombres,apellidos,dui,pin,username,rol
 11,Hector,Perez,77777777-7,1234,,Admin
 12,Teresa,Perez,88888888-8,1234,,Admin
 13,Joel Arturo,Ortiz Pineda,01122334-5,1234,JO13,Cliente
+14,Carlos,Barrientos,06523234-1,6666,CB14,Cliente

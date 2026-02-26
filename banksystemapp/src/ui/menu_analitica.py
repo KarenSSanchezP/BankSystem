@@ -1,5 +1,5 @@
 from .menu_base import MenuBase
-from ..services.analysis_services import AnalisisService # Asegúrate que el nombre del archivo coincida
+from ..services.analysis_service import AnalisisService
 
 class MenuAnalitica(MenuBase):
     def __init__(self):
