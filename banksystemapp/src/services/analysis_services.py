@@ -1,11 +1,14 @@
 import numpy as np
 import pandas as pd
 import os
+from ..repositories.cuentas.transferencia_repository import TransferenciaRepository
 
 class AnalisisService:
     def __init__(self):
         self.ruta_tx = os.path.join("banksystemapp", "data", "transacciones.csv")
         self.ruta_tr = os.path.join("banksystemapp", "data", "transferencias.csv")
+        self.ruta_plots = os.path.join("banksystemapp", "outputs", "plots")
+        self.transferencia_repo = TransferenciaRepository()
 
     def cargar_datos(self):
         """Carga las transacciones y convierte la fecha a objeto datetime."""
@@ -75,7 +78,6 @@ class AnalisisService:
         # Comparación relativa simple (puedes compararlo con el promedio diario nocturno)
         return nocturnas
 
-    # --- NUEVOS MÉTODOS REQUERIDOS POR LA UI ---
     
     def obtener_estadisticas_usuario(self, id_cuenta):
         df = self.cargar_datos()
@@ -156,12 +158,91 @@ class AnalisisService:
             print("AVISO: matplotlib no está instalado. Ejecute 'pip install matplotlib' para generar gráficos.")
 
     def obtener_metricas_grafo(self):
-        try:
-            import networkx as nx
-            if not os.path.exists(self.ruta_tr): return "Sin datos de transferencias."
-            dft = pd.read_csv(self.ruta_tr)
-            if dft.empty: return "No hay transferencias."
-            G = nx.from_pandas_edgelist(dft, 'id_origen', 'id_destino', create_using=nx.DiGraph())
-            return f"Grafo generado exitosamente.\nNodos identificados: {G.number_of_nodes()}\nAristas (Transferencias): {G.number_of_edges()}"
-        except ImportError:
-            return "AVISO: networkx no está instalado. Ejecute 'pip install networkx' para usar grafos."
+            """
+            Crea el grafo dirigido y calcula métricas de red [cite: 247-255].
+            """
+            try:
+                import networkx as nx
+                import matplotlib.pyplot as plt
+            except ImportError:
+                return "AVISO: networkx o matplotlib no están instalados. Ejecute 'pip install networkx matplotlib' para este módulo."
+            
+            # 1. Cargar todas las transferencias desde el repositorio
+            transferencias = self.transferencia_repo.obtener_todas()
+            
+            # 2. Inicializar el grafo dirigido [cite: 247]
+            G = nx.DiGraph()
+            
+            # 3. Construir nodos (cuentas) y aristas (transferencias) [cite: 248-251]
+            for tr in transferencias:
+                u, v = tr.id_origen, tr.id_destino
+                monto = float(tr.monto)
+                
+                # Peso acumulado: si ya existe la conexión, sumamos el monto 
+                if G.has_edge(u, v):
+                    G[u][v]['weight'] += monto
+                else:
+                    G.add_edge(u, v, weight=monto)
+            
+            if G.number_of_nodes() == 0:
+                return "No hay datos de transferencias suficientes para generar el grafo."
+
+            # 4. Calcular métricas mínimas obligatorias [cite: 252-255]
+            # In-degree (Recepción) y Out-degree (Envío) ponderados
+            in_degrees = dict(G.in_degree(weight='weight'))
+            out_degrees = dict(G.out_degree(weight='weight'))
+            
+            # Betweenness Centrality: identifica cuentas "puente"
+            centrality = nx.betweenness_centrality(G, weight='weight')
+            
+            # Detección de comunidades o agrupaciones 
+            comunidades = list(nx.community.greedy_modularity_communities(G))
+
+            # 5. Formatear resumen para el menú
+            resumen = f"--- RESULTADOS DEL ANÁLISIS DE RED ---\n"
+            resumen += f"Cuentas analizadas: {G.number_of_nodes()}\n"
+            resumen += f"Conexiones únicas: {G.number_of_edges()}\n"
+            resumen += f"Grupos/Comunidades detectadas: {len(comunidades)}\n\n"
+            
+            # Encontrar el mayor "Hub" (la cuenta que más dinero envía)
+            max_hub = max(out_degrees, key=out_degrees.get)
+            resumen += f"Mayor emisor (Hub): {max_hub} (${out_degrees[max_hub]:,.2f})\n"
+            
+            # Encontrar la cuenta más central (puente)
+            max_bridge = max(centrality, key=centrality.get)
+            resumen += f"Cuenta puente (Centralidad): {max_bridge}\n"
+
+            # 6. Generar y guardar la imagen obligatoria [cite: 245]
+            self._visualizar_grafo(G)
+            
+            return resumen
+
+    def _visualizar_grafo(self, G):
+        """Genera el archivo PNG con títulos y etiquetas ."""
+        import matplotlib.pyplot as plt
+        import networkx as nx
+        plt.figure(figsize=(12, 10))
+        # Layout para organizar los nodos
+        pos = nx.spring_layout(G, k=0.5, seed=42)
+            
+        # Dibujar nodos y etiquetas
+        nx.draw_networkx_nodes(G, pos, node_size=1200, node_color='orange', alpha=0.9)
+        nx.draw_networkx_labels(G, pos, font_size=9, font_weight='bold')
+            
+        # Dibujar aristas con flechas de dirección
+        nx.draw_networkx_edges(G, pos, width=1.5, alpha=0.4, edge_color='blue', arrows=True)
+            
+        # Etiquetas de peso (montos transferidos) en las aristas
+        edge_labels = nx.get_edge_attributes(G, 'weight')
+        # Formateamos los números a moneda sin decimales para no saturar la imagen
+        edge_labels_fmt = {k: f"${v:,.0f}" for k, v in edge_labels.items()}
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels_fmt, font_size=7)
+
+        plt.title("Grafo Dirigido de Transferencias Bancarias\n(Nodos: Cuentas | Aristas: Flujo Acumulado)", size=15)
+        plt.axis('off')
+            
+        # Guardar en la ruta especificada [cite: 237, 245]
+        os.makedirs(self.ruta_plots, exist_ok=True)
+        ruta_archivo = os.path.join(self.ruta_plots, "grafo_transferencias.png")
+        plt.savefig(ruta_archivo, bbox_inches='tight')
+        plt.close()

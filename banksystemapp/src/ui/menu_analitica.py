@@ -10,7 +10,7 @@ class MenuAnalitica(MenuBase):
             '2. Estadísticas de administrador',
             '3. Detalle de anomalías',
             '4. Gráficos de análisis',
-            '5. Módulo de grafos con transferencias',
+            '5. Grafos con transferencias',
             '6. Regresar'
         ]
     
@@ -104,13 +104,15 @@ class MenuAnalitica(MenuBase):
         self.limpiar_consola()
     
     def grafos_transferencias(self):
-        """Módulo de NetworkX: Métricas de red y comunidades [cite: 103, 109-112]."""
-        self.mostrar_encabezado("Módulo de grafos con transferencias", 42, simbolo="-", es_salto_de_linea=True)
-        
-        # Nodo = account_id, Arista = Transferencia [cite: 105-107]
-        print("Calculando In-degree, Out-degree y Centralidad...")
-        metricas = self.analisis_service.obtener_metricas_grafo()
-        print(metricas)
-        
-        self.continuar()
-        self.limpiar_consola()
+            """Permite obtener los gráficos de transferencias[cite: 192]."""
+            self.mostrar_encabezado("Módulo de Grafos con Transferencias", 42, simbolo="-", es_salto_de_linea=True)
+            
+            print("Calculando métricas de red, centralidad y comunidades...")
+            # Llamada al servicio que acabamos de programar
+            resultado = self.analisis_service.obtener_metricas_grafo()
+            
+            print(resultado)
+            print("\n[✓] El gráfico visual ha sido generado en: banksystemapp/outputs/plots/grafo_transferencias.png")
+            
+            self.continuar()
+            self.limpiar_consola()
