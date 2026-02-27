@@ -77,13 +77,13 @@ BankSystem/
 ├── requirements.txt        # Dependencias del proyecto
 ├── README.md               # Información del proyecto
 └── banksystemapp/          # Aplicación estructurada y modular
-    ├── data/                     # Datos del sistema
+    ├── data/                  # Datos del sistema
     ├── outputs/               # Archivos de salida
     │   └── plots/             # Gráficos y visualizaciones
     └── src/              # Código fuente principal
-        ├── analysis/     # Módulo de análisis de datos y detección de anomalías
         ├── models/       # Modelos de datos
-        │   └── usuarios/    # Definiciones de usuarios
+        │   └── cuentas/    # Definiciones de cuentas, transacciones y transferencias
+        │   └── usuarios/    # Definiciones de usuarios, clientes y administradores
         ├── repositories/    # Capa de acceso a datos (CSV)
         ├── services/        # Lógica de negocio
         ├── ui/              # Interfaz de usuario (menús)
@@ -100,7 +100,6 @@ El proyecto sigue una estructura modular con las siguientes capas:
 | **Services** | Lógica de negocio | `banksystemapp/src/services/` |
 | **Repositories** | Acceso a datos (CSV) | `banksystemapp/src/repositories/` |
 | **UI** | Menús e interfaz de usuario | `banksystemapp/src/ui/` |
-| **Analysis** | Análisis de datos y detección de anomalías | `banksystemapp/src/analysis/` |
 | **Utils** | Funciones de utilidad | `banksystemapp/src/utils/` |
 
 ## Base de Datos
@@ -146,6 +145,7 @@ Registro de transferencias entre cuentas:
 | Librería | Versión | Propósito |
 |----------|---------|----------|
 | **NumPy** | 2.4.2 | Computación numérica y operaciones matriciales |
+| **Pandas** | 3.0.1 | Manipulación de datos estructurados |
 
 ### Para Visualización
 | Librería | Versión | Propósito |
@@ -200,15 +200,7 @@ Identifica patrones de red de transferencias:
 - **Detección de Hubs**: Cuentas que reciben/envían muchas transferencias
 
 ## 🛠️ Estado del Proyecto
-**Estado**: En desarrollo activo
-- ✅ Estructura base del proyecto definida
-- ✅ Clases principales implementadas
-- ✅ Menús de usuario y administrador diseñados
-- ✅ Seed generator con datos de prueba y anomalías
-- 🔄 Implementación de servicios y repositorios en progreso
-- 🔄 Módulo de analítica en desarrollo
-- 🔄 Interfaz de usuario completa por implementar
-- 🔄 Visualizaciones de NetworkX
+**Estado**: Finalizado
 
 ## Colaboradores
 Proyecto colaborativo de la carrera Ingeniería en Sistemas Informáticos de la Universidad de El Salvador, para el curso Python Foundations impartido en la Escuela de Ingeniería de Sistemas Informáticos por Roberto Méndez.
