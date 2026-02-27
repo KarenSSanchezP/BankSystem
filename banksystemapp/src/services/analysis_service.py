@@ -79,21 +79,89 @@ class AnalisisService:
         return nocturnas
 
     
-    def obtener_estadisticas_usuario(self, id_cuenta):
-        df = self.cargar_datos()
-        if df is None or df.empty: return None
-        datos_cuenta = df[df['id_cuenta'] == id_cuenta]
-        if datos_cuenta.empty: return None
-        montos = datos_cuenta['monto'].to_numpy()
-        return {
-            "Total transacciones": len(montos),
-            "Suma total": np.sum(montos),
-            "Promedio": np.mean(montos),
-            "Desviación estándar": np.std(montos),
-            "Percentil 25": np.percentile(montos, 25) if len(montos) > 0 else 0,
-            "Percentil 50 (Mediana)": np.percentile(montos, 50) if len(montos) > 0 else 0,
-            "Percentil 75": np.percentile(montos, 75) if len(montos) > 0 else 0
-        }
+    # def obtener_estadisticas_usuario(self, id_cuenta):
+    #     df = self.cargar_datos()
+    #     if df is None or df.empty: return None
+    #     datos_cuenta = df[df['id_cuenta'] == id_cuenta]
+    #     if datos_cuenta.empty: return None
+    #     montos = datos_cuenta['monto'].to_numpy()
+    #     return {
+    #         "Total transacciones": len(montos),
+    #         "Suma total": np.sum(montos),
+    #         "Promedio": np.mean(montos),
+    #         "Desviación estándar": np.std(montos),
+    #         "Percentil 25": np.percentile(montos, 25) if len(montos) > 0 else 0,
+    #         "Percentil 50 (Mediana)": np.percentile(montos, 50) if len(montos) > 0 else 0,
+    #         "Percentil 75": np.percentile(montos, 75) if len(montos) > 0 else 0
+    #     }
+    
+    def obtener_estadisticas_completas(self, id_cuenta_filtro=None):
+        """Calcula las estadísticas para todas las cuentas o una específica 
+        si se proporciona el filtro."""
+        df_tx = self.cargar_datos()
+        ruta_cuentas = os.path.join("banksystemapp", "data", "cuentas.csv")
+        
+        if not os.path.exists(ruta_cuentas): return []
+        
+        df_cuentas = pd.read_csv(ruta_cuentas)
+        resultados = []
+        
+        for _, cuenta in df_cuentas.iterrows():
+            id_cuenta = cuenta['id_cuenta']
+            
+            if id_cuenta_filtro and id_cuenta != id_cuenta_filtro:
+                continue
+            
+            dui = cuenta['dui_propietario']
+            
+            if df_tx is not None and not df_tx.empty: 
+                tx_cuenta = df_tx[df_tx['id_cuenta'] == id_cuenta].copy()
+            else:
+                tx_cuenta = pd.DataFrame()
+            
+            if not tx_cuenta.empty:
+                depositos = tx_cuenta[tx_cuenta['tipo'] == 'DEPOSITO']['monto'].to_numpy()
+                total_depositos = np.sum(depositos) if len(depositos) > 0 else 0.0
+                
+                gastos = tx_cuenta[tx_cuenta['tipo'] == 'RETIRO']['monto'].to_numpy()
+                total_gastos = np.sum(gastos) if len(gastos) > 0 else 0.0
+                
+                if total_gastos == 0:
+                    ratio_str = "Inf" if total_depositos > 0 else "0.00"
+                else:
+                    ratio_str = f"{total_depositos / total_gastos:.2f}"
+                
+                montos = tx_cuenta['monto'].to_numpy() # Arreglo de montos para estadísticas de cuenta
+                
+                # Promedio diario
+                tx_cuenta['fecha'] = tx_cuenta['fecha_hora'].dt.date
+                dias_unicos = tx_cuenta['fecha'].nunique()
+                promedio_diario = np.sum(montos) / dias_unicos if dias_unicos > 0 else 0.0
+                
+                # Desviación estándar y percentiles
+                desviacion = np.std(montos)
+                p50 = np.percentile(montos, 50)
+                p90 = np.percentile(montos, 90)
+                p99 = np.percentile(montos, 99)
+            else:
+                total_depositos = 0.0
+                promedio_diario = 0.0
+                desviacion = 0.0
+                p50, p90, p99 = 0.0, 0.0, 0.0
+                ratio_str = "0.00"
+            
+            resultados.append({
+                "ID Cuenta": id_cuenta,
+                "DUI Propietario": dui,
+                "Total Depositos": f"${total_depositos:,.2f}",
+                "Promedio Diario": f"${promedio_diario:,.2f}",
+                "Desviacion": f"${desviacion:,.2f}",
+                "p50": f"${p50:,.2f}",
+                "p90": f"${p90:,.2f}",
+                "p99": f"${p99:,.2f}",
+                "Depositos/Gastos": ratio_str
+            })
+        return resultados
 
     def obtener_dashboard_admin(self):
         df = self.cargar_datos()

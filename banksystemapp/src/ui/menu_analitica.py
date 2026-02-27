@@ -41,21 +41,51 @@ class MenuAnalitica(MenuBase):
                 self.limpiar_consola()
     
     def estadisticas_por_usuario(self):
-        """Muestra estadísticas individuales: total depósitos, promedio, desviación y percentiles [cite: 57-63]."""
+        """Muestra estadísticas individuales: total depósitos, promedio, desviación y percentiles."""
         self.mostrar_encabezado("Estadísticas por usuario", 40, simbolo="-", es_salto_de_linea=True)
-        id_cuenta = input("Ingrese el ID de la cuenta a analizar (ej. C001): ").strip().upper()
         
-        # El servicio debe usar NumPy para estos cálculos sin ciclos for [cite: 55]
-        stats = self.analisis_service.obtener_estadisticas_usuario(id_cuenta)
-        if stats:
-            print(f"\nResultados para la cuenta {id_cuenta}:")
-            for clave, valor in stats.items():
-                print(f" - {clave}: {valor}")
-        else:
-            print("No se encontraron datos para esa cuenta.")
+        todas_estadisticas = self.analisis_service.obtener_estadisticas_completas()
+        
+        if not todas_estadisticas:
+            print("No se encontraron datos para mostrar.")
+            self.continuar()
+            self.limpiar_consola()
+            return
+        self._imprimir_tabla_estadisticas(todas_estadisticas)
+        
+        print("\n")
+        id_cuenta = input("Ingrese el ID de la cuenta a analizar (ej. C001) o presione ENTER para salir: ").strip().upper()
+        
+        if id_cuenta:
+            estadisticas_filtrada = self.analisis_service.obtener_estadisticas_completas(id_cuenta)
+            if estadisticas_filtrada:
+                self._imprimir_tabla_estadisticas(estadisticas_filtrada)
+            else:
+                print(f"No se encontraron datos para la cuenta {id_cuenta}.")
         
         self.continuar()
         self.limpiar_consola()
+    
+    def _imprimir_tabla_estadisticas(self, datos):
+        """Imprime los diccionarios en un formato de tabla alineado."""
+        encabezados = ["ID Cuenta", "DUI Propietario", "Total Depósitos", "Promedio Diario", "Desviación", "p50", "p90", "p99", "Depositos/Gastos"]
+        
+        formato_fila = "{:<10} {:<15} {:<18} {:<18} {:<15} {:<10} {:<10} {:<10} {:<18}"
+        
+        print(formato_fila.format(*encabezados))
+        print("-" * 130)
+        for fila in datos:
+            print(formato_fila.format(
+                fila['ID Cuenta'],
+                fila['DUI Propietario'],
+                fila['Total Depositos'],
+                fila['Promedio Diario'],
+                fila['Desviacion'],
+                fila['p50'],
+                fila['p90'],
+                fila['p99'],
+                fila['Depositos/Gastos']
+            ))
     
     def estadisticas_administrador(self):
         """Muestra el Dashboard de administrador: top días pico y top cuentas [cite: 64-71]."""
