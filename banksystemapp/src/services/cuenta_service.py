@@ -19,7 +19,7 @@ class CuentaService:
         # Validaciones del PDF
         if not cuenta:
             return False, "La cuenta no existe."
-        if cuenta.estado != "Activa": # [cite: 40]
+        if cuenta.estado != "Activa":
             return False, "La cuenta está bloqueada."
         if monto <= 0: # 
             return False, "El monto debe ser mayor a 0."
@@ -30,7 +30,7 @@ class CuentaService:
 
         # Registrar transacción con ID autoincremental (puedes mejorar la lógica del ID)
         nueva_tx = Transaccion(f"T{len(self.transaccion_repo.obtener_todas()) + 1}", id_cuenta, "DEPOSITO", monto)
-        self.transaccion_repo.agregar(nueva_tx) # [cite: 43]
+        self.transaccion_repo.agregar(nueva_tx)
         
         return True, f"Depósito exitoso. Nuevo saldo: ${cuenta.saldo}"
 
@@ -57,7 +57,7 @@ class CuentaService:
 
         # Registrar la transferencia para el módulo de grafos
         nueva_tr = Transferencia(f"TR{len(self.transferencia_repo.obtener_todas()) + 1}", id_origen, id_destino, monto)
-        self.transferencia_repo.agregar(nueva_tr) # [cite: 43]
+        self.transferencia_repo.agregar(nueva_tr) 
 
         return True, "Transferencia realizada con éxito."
 
@@ -66,7 +66,7 @@ class CuentaService:
             cuentas = self.cuenta_repo.obtener_todas()
             cuenta = next((c for c in cuentas if c.id_cuenta == id_cuenta), None)
 
-            # Validar que la cuenta existe cite: 40]
+            # Validar que la cuenta existe
             if not cuenta:
                 return False, "Error: La cuenta no existe."
 

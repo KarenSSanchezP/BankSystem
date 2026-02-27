@@ -137,7 +137,7 @@ class MenuAnalitica(MenuBase):
         self.limpiar_consola()
     
     def detalle_analisis(self):
-        """Reporta las 3 anomalías: Z-score, Structuring y Actividad Nocturna [cite: 72-74, 79, 85]."""
+        """Reporta las 3 anomalías: Z-score, Structuring y Actividad Nocturna."""
         self.mostrar_encabezado("Detalle de anomalías", 38, simbolo="-", es_salto_de_linea=True)
         
         print("[1] Anomalías de Monto (Z-Score > 3):")
@@ -153,19 +153,18 @@ class MenuAnalitica(MenuBase):
         self.limpiar_consola()
     
     def graficos_analisis(self):
-        """Genera y exporta archivos PNG a outputs/plots/ [cite: 94-98]."""
-        self.mostrar_encabezado("Generando gráficos de análisis", 40, simbolo="-", es_salto_de_linea=True)
+        """Genera y exporta archivos PNG a outputs/plots/ """
+        self.mostrar_encabezado("Generando gráficos de análisis", 47, simbolo="-", es_salto_de_linea=True)
         
-        # Matplotlib y Seaborn deben usarse aquí [cite: 5, 6]
         print("Procesando: Serie temporal, Heatmap, Boxplot y Scatter plot...")
         self.analisis_service.generar_visualizaciones()
-        print("✓ Archivos guardados en banksystemapp/outputs/plots/")
+        print("Exito. Archivos guardados en banksystemapp/outputs/plots/")
         
         self.continuar()
         self.limpiar_consola()
     
     def grafos_transferencias(self):
-            """Permite obtener los gráficos de transferencias[cite: 192]."""
+            """Permite obtener los gráficos de transferencias."""
             self.mostrar_encabezado("Módulo de Grafos con Transferencias", 42, simbolo="-", es_salto_de_linea=True)
             
             print("Calculando métricas de red, centralidad y comunidades...")

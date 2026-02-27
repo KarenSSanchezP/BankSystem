@@ -4,13 +4,13 @@ from ...models.cuentas.transferencia import Transferencia
 
 class TransferenciaRepository:
     def __init__(self):
-        # Definición de la ruta y columnas según el requerimiento [cite: 119, 121]
+        # Definición de la ruta y columnas según el requerimiento
         self.archivo_csv = os.path.join("banksystemapp", "data", "transferencias.csv")
         self.headers = ["id_transferencia", "id_cuenta_origen", "id_cuenta_destino", "monto", "fecha_hora"]
         self._verificar_archivo()
 
     def _verificar_archivo(self):
-        """Crea el archivo con encabezados si no existe[cite: 125]."""
+        """Crea el archivo con encabezados si no existe."""
         if not os.path.exists(self.archivo_csv):
             os.makedirs(os.path.dirname(self.archivo_csv), exist_ok=True)
             with open(self.archivo_csv, mode='w', newline='', encoding='utf-8') as f:
@@ -20,7 +20,7 @@ class TransferenciaRepository:
     def obtener_todas(self):
         """
         Carga todas las transferencias. 
-        Esencial para construir el grafo dirigido en NetworkX[cite: 103, 104].
+        Esencial para construir el grafo dirigido en NetworkX.
         """
         transferencias = []
         try:
@@ -40,7 +40,7 @@ class TransferenciaRepository:
 
     def agregar(self, t: Transferencia):
         """
-        Persiste una nueva transferencia entre cuentas[cite: 124].
+        Persiste una nueva transferencia entre cuentas.
         """
         try:
             with open(self.archivo_csv, mode='a', newline='', encoding='utf-8') as f:

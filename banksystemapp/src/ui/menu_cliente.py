@@ -50,7 +50,7 @@ class MenuCliente(MenuBase):
                 self.limpiar_consola()
 
     def _obtener_mis_cuentas(self):
-        """Retorna la lista de cuentas que pertenecen al DUI del usuario logueado[cite: 25]."""
+        """Retorna la lista de cuentas que pertenecen al DUI del usuario logueado."""
         return self.cuenta_repo.buscar_por_dui(self.usuario.dui)
 
     def _seleccionar_cuenta(self, mensaje="Seleccione una cuenta: "):
@@ -121,7 +121,7 @@ class MenuCliente(MenuBase):
         self.limpiar_consola()
 
     def retirar(self):
-        """Permite al cliente retirar dinero validando saldo y estado[cite: 35, 41]."""
+        """Permite al cliente retirar dinero validando saldo y estado."""
         self.mostrar_encabezado("\t Retirar", 43, simbolo="-", es_salto_de_linea=True)
         cuenta = self._seleccionar_cuenta()
         if cuenta:
@@ -135,7 +135,7 @@ class MenuCliente(MenuBase):
         self.limpiar_consola()
 
     def transferir_entre_cuentas(self):
-        """Permite transferencias a cuentas propias o terceros[cite: 36, 42]."""
+        """Permite transferencias a cuentas propias o terceros."""
         self.mostrar_encabezado("Transferir entre cuentas", 41, simbolo="-", es_salto_de_linea=True)
         cuenta_origen = self._seleccionar_cuenta("Seleccione la cuenta de origen: ")
         if cuenta_origen:

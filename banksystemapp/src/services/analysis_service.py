@@ -7,6 +7,7 @@ class AnalisisService:
     def __init__(self):
         self.ruta_tx = os.path.join("banksystemapp", "data", "transacciones.csv")
         self.ruta_tr = os.path.join("banksystemapp", "data", "transferencias.csv")
+        self.ruta_cuentas = os.path.join("banksystemapp", "data", "cuentas.csv")
         self.ruta_plots = os.path.join("banksystemapp", "outputs", "plots")
         self.transferencia_repo = TransferenciaRepository()
 
@@ -226,24 +227,124 @@ class AnalisisService:
         return pd.concat(anomalias).to_string()
 
     def generar_visualizaciones(self):
+        """Genera y exporta las visualizaciones de los datos"""
         try:
             import matplotlib.pyplot as plt
-            out_dir = os.path.join("banksystemapp", "outputs", "plots")
-            os.makedirs(out_dir, exist_ok=True)
-            df = self.cargar_datos()
-            if df is None or df.empty: return
+            import seaborn as sns
             
-            plt.figure()
-            df['fecha_hora'].dt.date.value_counts().sort_index().plot()
-            plt.title("Serie temporal: Transacciones por Día")
-            plt.savefig(os.path.join(out_dir, "serie_temporal.png"))
+            out_dir = self.ruta_plots
+            os.makedirs(out_dir, exist_ok=True)
+            
+            df_tx = self.cargar_datos()
+            if df_tx is None or df_tx.empty: 
+                print("No hay datos suficientes para generar los gráficos.")
+                return
+            
+            ruta_cuentas = self.ruta_cuentas
+            df_cuentas = pd.read_csv(ruta_cuentas)
+            
+            # Combinar transacciones y cuentas para obtener el tipo de cuenta disponible
+            df_merged = df_tx.merge(df_cuentas[['id_cuenta', 'tipo']], on='id_cuenta', how='left')
+            df_merged.rename(columns={'tipo_x': 'tipo_tx', 'tipo_y': 'tipo_cuenta'}, inplace=True)
+            
+            # -----------------------------------------------------------------------
+            # Serie temporal del total de depositos, gastos y neto del banco por día
+            # -----------------------------------------------------------------------
+            plt.figure(figsize=(10, 6))
+            df_merged['fecha'] = df_merged['fecha_hora'].dt.date
+            
+            # Agrupamos por fecha y tipo de transacción
+            diario = df_merged.groupby(['fecha', 'tipo_tx'])['monto'].sum().unstack(fill_value=0)
+            if 'DEPOSITO' not in diario.columns: diario['DEPOSITO'] = 0.0
+            if 'RETIRO' not in diario.columns: diario['RETIRO'] = 0.0
+            # Calculamos el neto
+            diario['NETO'] = diario['DEPOSITO'] - diario['RETIRO']
+            
+            plt.plot(diario.index, diario['DEPOSITO'], marker='o', label='Depositos', color='green', linewidth=2)
+            plt.plot(diario.index, diario['RETIRO'], marker='o', label='Retiros', color='red', linewidth=2)
+            plt.plot(diario.index, diario['NETO'], marker='o', label='Neto', color='blue', linewidth=2)
+            
+            plt.title("Serie temporal: Total de depositos del banco por día", fontsize=14, pad=15)
+            plt.xlabel("Fecha", fontsize=12)
+            plt.ylabel("Monto Total ($)", fontsize=12)
+            plt.legend(title='Tipo de movimiento')
+            plt.xticks(rotation=45)
+            plt.grid(True, linestyle='--', alpha=0.7)
+            plt.tight_layout()
+            plt.savefig(os.path.join(out_dir, "serie_temporal_depositos.png"))
             plt.close()
-        except ImportError:
-            print("AVISO: matplotlib no está instalado. Ejecute 'pip install matplotlib' para generar gráficos.")
-
+            
+            # -----------------------------------------------------------
+            # Heatmap de actividad (Top 10 cuentas vs Dias de la semana)
+            # -----------------------------------------------------------
+            plt.figure(figsize=(10, 6))
+            # Encontrar las 10 cuentas con más transacciones
+            top_cuentas = df_merged['id_cuenta'].value_counts().nlargest(10).index
+            df_top = df_merged[df_merged['id_cuenta'].isin(top_cuentas)].copy()
+            
+            df_top['dia_semana'] = df_top['fecha_hora'].dt.day_name()
+            # Ordenar los días de la semana para el heatmap
+            dias_orden = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+            dias_espanol = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+            
+            heatmap_data = df_top.groupby(['id_cuenta', 'dia_semana']).size().unstack(fill_value=0) # Matriz de Cuenta vs Día de la semana
+            heatmap_data = heatmap_data.reindex(columns=dias_orden, fill_value=0) # Asegurar el orden correcto de los días
+            heatmap_data.columns = dias_espanol # Traducir columnas a español
+            
+            sns.heatmap(heatmap_data, cmap='YlGnBu', annot=True, fmt='d', linewidths=0.5)
+            plt.title("Heatmap: Top 10 cuentas por día de la semana", fontsize=14, pad=15)
+            plt.xlabel("Día de la semana", fontsize=12)
+            plt.ylabel("ID de Cuenta", fontsize=12)
+            plt.yticks(rotation=0)
+            plt.tight_layout()
+            plt.savefig(os.path.join(out_dir, "heatmap_actividad.png"))
+            plt.close()
+            
+            # ----------------------------------------------------
+            # Boxplot por segmento (Depositos por tipo de cuenta)
+            # ----------------------------------------------------
+            plt.figure(figsize=(10, 6))
+            depositos = df_merged[df_merged['tipo_tx'] == 'DEPOSITO']
+            
+            sns.boxplot(x='tipo_cuenta', y='monto', data=depositos, hue='tipo_cuenta', palette='Set2', legend=False)
+            plt.title("Boxplot: Depositos por tipo de cuenta", fontsize=14, pad=15)
+            plt.xlabel("Tipo de cuenta", fontsize=12)
+            plt.ylabel("Monto del deposito ($)", fontsize=12)
+            plt.tight_layout()
+            plt.savefig(os.path.join(out_dir, "boxplot_depositos.png"))
+            plt.close()
+            
+            # ----------------------------------------------------
+            # Scatterplot (Depósitos vs Gastos)
+            # ----------------------------------------------------  
+            plt.figure(figsize=(10, 6))
+            
+            # Creamos un pivote con total depositos y retiro por cuenta
+            pivote = df_merged.groupby(['id_cuenta', 'tipo_tx'])['monto'].sum().unstack(fill_value=0)
+            if 'DEPOSITO' not in pivote.columns: pivote['DEPOSITO'] = 0.0
+            if 'RETIRO' not in pivote.columns: pivote['RETIRO'] = 0.0
+            
+            # Unimos con el tipo de cuenta para colorear por segmento
+            scatter_data = pivote.merge(df_cuentas[['id_cuenta', 'tipo']], on='id_cuenta', how='left')
+            
+            sns.scatterplot(x='DEPOSITO', y='RETIRO', hue='tipo', data=scatter_data, s=150, palette='deep', alpha=0.7, edgecolor='black')
+            plt.title("Scatterplot: Depósitos vs Gastos", fontsize=14, pad=15)
+            plt.xlabel("Monto Total de Retiros ($)", fontsize=12)
+            plt.ylabel("Monto Total de Depositos ($)", fontsize=12)
+            plt.legend(title="Tipo de cuenta")
+            plt.grid(True, linestyle='--', alpha=0.5)
+            plt.savefig(os.path.join(out_dir, "scatterplot_depositos_gastos.png"))
+            plt.close()
+            
+        except ImportError as e:
+            print(f"AVISO: Faltan librerias para graficar ({e})")
+        except Exception as e:
+            print(f"AVISO: Error al generar gráficos ({e})")
+    
+    
     def obtener_metricas_grafo(self):
             """
-            Crea el grafo dirigido y calcula métricas de red [cite: 247-255].
+            Crea el grafo dirigido y calcula métricas de red.
             """
             try:
                 import networkx as nx
@@ -254,10 +355,10 @@ class AnalisisService:
             # 1. Cargar todas las transferencias desde el repositorio
             transferencias = self.transferencia_repo.obtener_todas()
             
-            # 2. Inicializar el grafo dirigido [cite: 247]
+            # 2. Inicializar el grafo dirigido
             G = nx.DiGraph()
             
-            # 3. Construir nodos (cuentas) y aristas (transferencias) [cite: 248-251]
+            # 3. Construir nodos (cuentas) y aristas (transferencias)
             for tr in transferencias:
                 u, v = tr.id_origen, tr.id_destino
                 monto = float(tr.monto)
@@ -271,7 +372,7 @@ class AnalisisService:
             if G.number_of_nodes() == 0:
                 return "No hay datos de transferencias suficientes para generar el grafo."
 
-            # 4. Calcular métricas mínimas obligatorias [cite: 252-255]
+            # 4. Calcular métricas mínimas obligatorias
             # In-degree (Recepción) y Out-degree (Envío) ponderados
             in_degrees = dict(G.in_degree(weight='weight'))
             out_degrees = dict(G.out_degree(weight='weight'))
@@ -296,7 +397,7 @@ class AnalisisService:
             max_bridge = max(centrality, key=centrality.get)
             resumen += f"Cuenta puente (Centralidad): {max_bridge}\n"
 
-            # 6. Generar y guardar la imagen obligatoria [cite: 245]
+            # 6. Generar y guardar la imagen obligatoria
             self._visualizar_grafo(G)
             
             return resumen
@@ -325,7 +426,7 @@ class AnalisisService:
         plt.title("Grafo Dirigido de Transferencias Bancarias\n(Nodos: Cuentas | Aristas: Flujo Acumulado)", size=15)
         plt.axis('off')
             
-        # Guardar en la ruta especificada [cite: 237, 245]
+        # Guardar en la ruta especificada
         os.makedirs(self.ruta_plots, exist_ok=True)
         ruta_archivo = os.path.join(self.ruta_plots, "grafo_transferencias.png")
         plt.savefig(ruta_archivo, bbox_inches='tight')
