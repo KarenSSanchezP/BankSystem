@@ -88,20 +88,51 @@ class MenuAnalitica(MenuBase):
             ))
     
     def estadisticas_administrador(self):
-        """Muestra el Dashboard de administrador: top días pico y top cuentas [cite: 64-71]."""
+        """Muestra el Dashboard de administrador: top días pico y top cuentas."""
         self.mostrar_encabezado("Estadísticas de administrador", 45, simbolo="-", es_salto_de_linea=True)
         
         dashboard = self.analisis_service.obtener_dashboard_admin()
         
-        print("\n--- TOP 5 DÍAS PICO ---")
-        print(dashboard.get('dias_pico', 'Sin datos'))
+        if not dashboard:
+            print("No hay datos suficientes para generar el dashboard.")
+            self.continuar()
+            self.limpiar_consola()
+            return
         
-        print("\n--- TOP 10 CUENTAS (DEPÓSITOS) ---")
-        print(dashboard.get('top_depositos', 'Sin datos'))
+        # Dias pico
+        print("\n--- TOP 5 DÍAS CON MÁS TRANSACCIONES ---")
+        print(f"{'Fecha':<15} | {'Cantidad':>10}")
+        print("-" * 40)
+        for fecha, cantidad in dashboard['dias_pico'].items():
+            aux = ""
+            print(f"{fecha}{aux:<5} | {cantidad:>3} transacciones")
+
+        # Total diario del banco
+        print("\n--- TOTAL DIARIO DEL BANCO (Ultimos 5 días) ---")
+        print("-" * 65)
+        print(f"{'Fecha':<15} | {'Depositos':<15} | {'Gastos':<15} | {'Neto':<15}")
+        for fecha, montos in dashboard['total_diario_banco'].items():
+            print(f"{str(fecha):<15} | ${montos['DEPOSITO']:<14,.2f} | ${montos['RETIRO']:<14,.2f} | ${montos['NETO']:<14,.2f}")
         
-        print("\n--- TOP 10 CUENTAS (GASTOS) ---")
-        print(dashboard.get('top_gastos', 'Sin datos'))
+        # Top cuentas por depósitos y gastos
+        print("\n--- TOP 10 CUENTAS POR DEPÓSITOS Y GASTOS ---")
+        print(f"{'POR DEPÓSITOS':<25} | {'POR GASTOS':<25}")
+        print("-" * 55)
         
+        depositos_items = list(dashboard['top_depositos'].items())
+        gastos_items = list(dashboard['top_gastos'].items())
+        max_len = max(len(depositos_items), len(gastos_items))
+        
+        for i in range(max_len):
+            str_dep = f"{depositos_items[i][0]}: ${depositos_items[i][1]:,.2f}" if i < len(depositos_items) else ""
+            str_gas = f"{gastos_items[i][0]}: ${gastos_items[i][1]:,.2f}" if i < len(gastos_items) else ""
+            print(f"{str_dep:<25} | {str_gas:<25}")
+        
+        print("\n--- RESUMEN DE ANOMALIAS DETECTADAS ---")
+        for tipo, cantidad in dashboard['resumen_anomalias'].items():
+            advertencia = "⚠️ " if cantidad > 0 else "✅"
+            print(f"{advertencia:<5} {tipo:<30} {cantidad:>5} anomalías")
+            
         self.continuar()
         self.limpiar_consola()
     

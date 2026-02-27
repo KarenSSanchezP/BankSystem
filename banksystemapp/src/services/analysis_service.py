@@ -77,23 +77,6 @@ class AnalisisService:
         
         # Comparación relativa simple (puedes compararlo con el promedio diario nocturno)
         return nocturnas
-
-    
-    # def obtener_estadisticas_usuario(self, id_cuenta):
-    #     df = self.cargar_datos()
-    #     if df is None or df.empty: return None
-    #     datos_cuenta = df[df['id_cuenta'] == id_cuenta]
-    #     if datos_cuenta.empty: return None
-    #     montos = datos_cuenta['monto'].to_numpy()
-    #     return {
-    #         "Total transacciones": len(montos),
-    #         "Suma total": np.sum(montos),
-    #         "Promedio": np.mean(montos),
-    #         "Desviación estándar": np.std(montos),
-    #         "Percentil 25": np.percentile(montos, 25) if len(montos) > 0 else 0,
-    #         "Percentil 50 (Mediana)": np.percentile(montos, 50) if len(montos) > 0 else 0,
-    #         "Percentil 75": np.percentile(montos, 75) if len(montos) > 0 else 0
-    #     }
     
     def obtener_estadisticas_completas(self, id_cuenta_filtro=None):
         """Calcula las estadísticas para todas las cuentas o una específica 
@@ -108,12 +91,9 @@ class AnalisisService:
         
         for _, cuenta in df_cuentas.iterrows():
             id_cuenta = cuenta['id_cuenta']
-            
-            if id_cuenta_filtro and id_cuenta != id_cuenta_filtro:
-                continue
+            if id_cuenta_filtro and id_cuenta != id_cuenta_filtro: continue
             
             dui = cuenta['dui_propietario']
-            
             if df_tx is not None and not df_tx.empty: 
                 tx_cuenta = df_tx[df_tx['id_cuenta'] == id_cuenta].copy()
             else:
@@ -122,15 +102,13 @@ class AnalisisService:
             if not tx_cuenta.empty:
                 depositos = tx_cuenta[tx_cuenta['tipo'] == 'DEPOSITO']['monto'].to_numpy()
                 total_depositos = np.sum(depositos) if len(depositos) > 0 else 0.0
-                
                 gastos = tx_cuenta[tx_cuenta['tipo'] == 'RETIRO']['monto'].to_numpy()
                 total_gastos = np.sum(gastos) if len(gastos) > 0 else 0.0
-                
+
                 if total_gastos == 0:
                     ratio_str = "Inf" if total_depositos > 0 else "0.00"
                 else:
                     ratio_str = f"{total_depositos / total_gastos:.2f}"
-                
                 montos = tx_cuenta['monto'].to_numpy() # Arreglo de montos para estadísticas de cuenta
                 
                 # Promedio diario
@@ -164,22 +142,60 @@ class AnalisisService:
         return resultados
 
     def obtener_dashboard_admin(self):
-        df = self.cargar_datos()
-        if df is None or df.empty: return {}
+        """Genera las métricas generales del banco para el dashboard del administrador"""
+        df_tx = self.cargar_datos()
+        if df_tx is None or df_tx.empty: return None
         
-        df['fecha'] = df['fecha_hora'].dt.date
-        dias_pico = df['fecha'].value_counts().head(5).to_string()
+        # Transacciones por día y días pico (top 5) 
+        df_tx['fecha'] = df_tx['fecha_hora'].dt.date
+        tx_por_dia = df_tx.groupby('fecha').size()
+        dias_pico = tx_por_dia.nlargest(5).to_dict()
         
-        depositos = df[df['tipo'] == 'DEPOSITO']
-        top_depositos = depositos.groupby('id_cuenta')['monto'].sum().nlargest(10).to_string() if not depositos.empty else "Sin datos"
+        # Total diario del banco (Depositos, Gastos, Neto)
+        total_diario_tipo = df_tx.groupby(['fecha', 'tipo'])['monto'].sum().unstack(fill_value=0)
         
-        gastos = df[df['tipo'] == 'RETIRO']
-        top_gastos = gastos.groupby('id_cuenta')['monto'].sum().nlargest(10).to_string() if not gastos.empty else "Sin datos"
+        # Si no se encuentran datos, se agregan valores iniciales para evitar errores
+        if 'DEPOSITO' not in total_diario_tipo.columns:
+            total_diario_tipo['DEPOSITO'] = 0.0
+        if 'RETIRO' not in total_diario_tipo.columns:
+            total_diario_tipo['RETIRO'] = 0.0
+        total_diario_tipo['NETO'] = total_diario_tipo['DEPOSITO'] - total_diario_tipo['RETIRO']
+        
+        # Ultimos 5 días de actividad
+        total_diario = total_diario_tipo.tail(5).sort_index(ascending=False).to_dict(orient='index')
+        
+        # Top 10 cuentas por depósitos y gastos
+        depositos = df_tx[df_tx['tipo'] == 'DEPOSITO']
+        top_depositos = depositos.groupby('id_cuenta')['monto'].sum().nlargest(10).to_dict()
+        
+        gastos = df_tx[df_tx['tipo'] == 'RETIRO']
+        top_gastos = gastos.groupby('id_cuenta')['monto'].sum().nlargest(10).to_dict()
+        
+        total_zscore = 0
+        total_nocturna = 0
+        
+        for id_cuenta in df_tx['id_cuenta'].unique():
+            anom_z = self.detectar_zscore(id_cuenta)
+            total_zscore += len(anom_z) if anom_z is not None and not isinstance(anom_z, list) else 0
+            
+            anom_n = self.detectar_actividad_nocturna(id_cuenta)
+            total_nocturna += len(anom_n) if anom_n is not None and not isinstance(anom_n, list) else 0
+        
+        anom_s = self.detectar_structuring()
+        total_structuring = len(anom_s) if anom_s is not None and not isinstance(anom_s, list) else 0
+        
+        resumen_anomalias = {
+            "Z-Score (Montos Atípicos)": total_zscore,
+            "Actividad Nocturna Inusual": total_nocturna,
+            "Structuring (Depósitos Partidos)": total_structuring
+        }
         
         return {
             'dias_pico': dias_pico,
+            'total_diario_banco': total_diario,
             'top_depositos': top_depositos,
-            'top_gastos': top_gastos
+            'top_gastos': top_gastos,
+            'resumen_anomalias': resumen_anomalias
         }
 
     def reportar_z_score(self):
